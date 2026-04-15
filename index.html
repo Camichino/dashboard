@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Camichino Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,700;1,6..96,300;1,6..96,400&family=DM+Sans:wght@200;300;400;500&family=Tenor+Sans&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   --gold:#c8a96e;--warn:#8a6a2a;--border:#e0d8cc;
   --surface:#f7f4ef;--sw:200px;
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);font-size:14px;overflow-x:hidden;min-height:100vh}
 /* SIDEBAR */
 #sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sw);background:var(--charcoal);display:flex;flex-direction:column;z-index:300;transition:transform .28s cubic-bezier(.4,0,.2,1)}
@@ -22,7 +22,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .sb-name{font-family:'Bodoni Moda',serif;font-size:19px;font-weight:400;color:var(--cream);letter-spacing:.05em}
 .sb-sub{font-family:'Tenor Sans',sans-serif;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe);margin-top:3px}
 .sb-nav{padding:12px 0;flex:1;overflow-y:auto}
-.ni{display:flex;align-items:center;gap:10px;padding:10px 22px;cursor:pointer;font-family:'Tenor Sans',sans-serif;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--taupe);transition:all .15s;border-left:2px solid transparent;user-select:none}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 22px;cursor:pointer;font-family:'Tenor Sans',sans-serif;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--taupe);transition:all .15s;border-left:2px solid transparent;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0);touch-action:manipulation}
 .ni:hover{color:var(--cream);background:rgba(255,255,255,.04)}
 .ni.active{color:var(--cream);border-left-color:var(--ox);background:rgba(73,10,10,.18)}
 .ni i{font-size:12px;width:14px;text-align:center;flex-shrink:0;font-style:normal}
@@ -262,7 +262,7 @@ tr:hover td{background:var(--surface)}
 		<meta name="twitter:image" content="https://files.manuscdn.com/webdev_screenshots/2026/04/10/njt5p5thw5cCojSMEPVtAk.png?x-oss-process=image/resize,w_1200/crop,h_630,x_0,y_0">
 		<meta name="twitter:image:width" content="1200">
 		<meta name="twitter:image:height" content="630"><link rel="canonical" href="https://dashboard.camichino.com" /></head>
-<body>
+<body ontouchstart="">
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
@@ -271,14 +271,14 @@ tr:hover td{background:var(--surface)}
     <div class="sb-sub">Command Center</div>
   </div>
   <div class="sb-nav">
-    <div class="ni active" onclick="go('overview',this)"><i>◈</i> Overview</div>
-    <div class="ni" onclick="go('calendar',this)"><i>▦</i> Calendar</div>
-    <div class="ni" onclick="go('performance',this)"><i>◉</i> Performance</div>
-    <div class="ni" onclick="go('finances',this)"><i>◇</i> Finances</div>
+    <button class="ni active" onclick="go('overview',this)"><i>◈</i> Overview</button>
+    <button class="ni" onclick="go('calendar',this)"><i>▦</i> Calendar</button>
+    <button class="ni" onclick="go('performance',this)"><i>◉</i> Performance</button>
+    <button class="ni" onclick="go('finances',this)"><i>◇</i> Finances</button>
     <div class="sb-div"></div>
-    <div class="ni" onclick="go('reviews',this)"><i>★</i> Reviews</div>
-    <div class="ni" onclick="go('market',this)"><i>◎</i> Market Intel</div>
-    <div class="ni" onclick="go('advisor',this)"><i>◆</i> AI Advisor</div>
+    <button class="ni" onclick="go('reviews',this)"><i>★</i> Reviews</button>
+    <button class="ni" onclick="go('market',this)"><i>◎</i> Market Intel</button>
+    <button class="ni" onclick="go('advisor',this)"><i>◆</i> AI Advisor</button>
   </div>
   <div class="sb-bottom">
     <button id="sync-btn" onclick="masterSync()">↻ Sync Dashboard</button>
@@ -984,7 +984,7 @@ function renderFocus(){
   const items = getFocus();
   const el = document.getElementById('focus-list');
   el.innerHTML = items.map(f=>`
-    <div class="fi ${f.done?'done':''}" data-id="${f.id}">
+    <div class="fi ${f.done?'done':''}" data-id="${f.id}" style="cursor:pointer;background:none;border:1px solid var(--border);width:100%;text-align:left;border-radius:8px;">
       <button class="fck ${f.done?'on':''}" onclick="toggleFocus('${f.id}')"></button>
       <div style="flex:1;min-width:0">
         <div class="fi-t">${f.title}</div>
