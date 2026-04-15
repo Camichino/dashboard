@@ -1548,19 +1548,19 @@ function showToast(pl,briefing){
   const t=document.getElementById('toast');
   const c=document.getElementById('toast-content');
   const ts=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  c.innerHTML=`
-    <div style="font-family:'Tenor Sans',sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:12px">Synced · ${ts}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);text-transform:uppercase;letter-spacing:.1em;font-family:'Tenor Sans',sans-serif;margin-bottom:3px">7 days</div><div style="font-family:'Bodoni Moda',serif;font-size:20px;color:var(--cream)">${pl.yourOcc7}%</div><div style="font-size:9px;color:var(--taupe)">mkt ${pl.mktOcc7}%</div></div>
-      <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);text-transform:uppercase;letter-spacing:.1em;font-family:'Tenor Sans',sans-serif;margin-bottom:3px">30 days</div><div style="font-family:'Bodoni Moda',serif;font-size:20px;color:var(--cream)">${pl.yourOcc30}%</div><div style="font-size:9px;color:var(--taupe)">mkt ${pl.mktOcc30}%</div></div>
-      <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);text-transform:uppercase;letter-spacing:.1em;font-family:'Tenor Sans',sans-serif;margin-bottom:3px">60 days</div><div style="font-family:'Bodoni Moda',serif;font-size:20px;color:var(--cream)">${pl.yourOcc60}%</div><div style="font-size:9px;color:var(--taupe)">mkt ${pl.mktOcc60}%</div></div>
-    </div>
-    <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px 12px;display:flex;gap:18px;font-size:12px;color:var(--cream);margin-bottom:${briefing?'12px':'0'}">
-      <div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Floor</div><strong>$${pl.priceFloor}</strong></div>
-      <div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Base</div><strong>$${pl.priceBase}</strong></div>
-      <div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Recommended</div><strong style="color:var(--gold)">$${pl.recBase}</strong></div>
-    </div>
-    '+(briefing?'<div style="font-size:12px;color:rgba(238,234,228,.8);line-height:1.6;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">'+briefing+'</div>':'');
+  c.innerHTML=
+    '<div style="font-family:\'Tenor Sans\',sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:12px">Synced · '+ts+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">'+
+    '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">7 days</div><div style="font-family:\'Bodoni Moda\',serif;font-size:20px;color:var(--cream)">'+pl.yourOcc7+'%</div><div style="font-size:9px;color:var(--taupe)">mkt '+pl.mktOcc7+'%</div></div>'+
+    '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">30 days</div><div style="font-family:\'Bodoni Moda\',serif;font-size:20px;color:var(--cream)">'+pl.yourOcc30+'%</div><div style="font-size:9px;color:var(--taupe)">mkt '+pl.mktOcc30+'%</div></div>'+
+    '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">60 days</div><div style="font-family:\'Bodoni Moda\',serif;font-size:20px;color:var(--cream)">'+pl.yourOcc60+'%</div><div style="font-size:9px;color:var(--taupe)">mkt '+pl.mktOcc60+'%</div></div>'+
+    '</div>'+
+    '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px 12px;display:flex;gap:18px;font-size:12px;color:var(--cream);margin-bottom:'+(briefing?'12px':'0')+'">'+
+    '<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Floor</div><strong>$'+pl.priceFloor+'</strong></div>'+
+    '<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Base</div><strong>$'+pl.priceBase+'</strong></div>'+
+    '<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Recommended</div><strong style="color:var(--gold)">$'+pl.recBase+'</strong></div>'+
+    '</div>'+
+    (briefing?'<div style="font-size:12px;color:rgba(238,234,228,.8);line-height:1.6;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">'+briefing+'</div>':'');
   t.style.display='block';
   setTimeout(()=>{t.style.display='none'},15000);
 }
