@@ -816,7 +816,7 @@ function renderReviews(){
       </div>
       <div class="rs">${stars(r.stars)}</div>
       ${r.body?`<div class="rb">"${r.body}"</div>`:''}
-      ${r.tags&&r.tags.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${r.tags.map(t=>`<div class="badge-t">${t}</div>`).join('')}</div>`:''}
+      ${r.tags&&r.tags.length ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">' + r.tags.map(t=>'<div class="badge-t">'+t+'</div>').join('') + '</div>' : ''}
     </div>`).join('');
 }
 
@@ -1071,7 +1071,7 @@ CURRENT DATA:
 - Actualized YTD: $2,897 (7 payouts)
 - Expenses YTD: $${S.expenses.reduce((s,e)=>s+(e.amount||0),0).toLocaleString()} (${S.expenses.length} entries)
 - Reserve Fund: $${(S.balances.reserve||0).toLocaleString()} / $17,500 target
-- PriceLabs: ${pl?`Base $${pl.base_price}, Occ next 30d: ${Math.round((pl.occupancy_next_30||0)*100)}%, Market: ${Math.round((pl.market_occupancy_next_30||0)*100)}%`:'Not synced'}
+- PriceLabs: ${pl ? 'Base $' + pl.base_price + ', Occ next 30d: ' + Math.round((pl.occupancy_next_30||0)*100) + '%, Market: ' + Math.round((pl.market_occupancy_next_30||0)*100) + '%' : 'Not synced'}
 - World Cup: Jul 11, 2026 at MetLife | Jul 18-22 locked at $1,500/night
 - Key note: 1★ review from Elizabeth (Feb) factoring into avg
 - Brand principle: NO discount strategy. Protect ADR integrity at all times.`;
