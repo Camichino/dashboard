@@ -847,8 +847,8 @@ const BOOKINGS = [
   {guest:'Dezmon Criss-Barnard',code:'HMJJQY', ci:'2026-03-10',co:'2026-03-13',nights:3, payout:379.75, status:'past',      guests:3},
   {guest:'Nida Mitha',         code:'HM85A5',  ci:'2026-03-13',co:'2026-03-15',nights:2, payout:434.56, status:'past',      guests:2},
   {guest:'Tevfik Vatansever',  code:'HMKNEC',  ci:'2026-03-15',co:'2026-03-22',nights:7, payout:923.88, status:'current',   guests:3},
-  {guest:'Kendal Brame',       code:'HMCJDR',  ci:'2026-03-25',co:'2026-03-28',nights:3, payout:539,    status:'confirmed', guests:1},
-  {guest:'Nadia Frison',       code:'HMJAXK',  ci:'2026-03-30',co:'2026-04-09',nights:10,payout:1944.85,status:'confirmed', guests:2},
+  {guest:'Kendal Brame',       code:'HMCJDR',  ci:'2026-03-25',co:'2026-03-28',nights:3, payout:539,    status:'past',      guests:1},
+  {guest:'Nadia Frison',       code:'HMJAXK',  ci:'2026-03-30',co:'2026-04-09',nights:10,payout:1944.85,status:'past',      guests:2},
   {guest:'Lauren Dilworth',    code:'HMT5PT',  ci:'2026-04-09',co:'2026-04-12',nights:3, payout:527.68, status:'cancelled', guests:2, cancelledBy:'guest'},
   {guest:'Javier Rodriguez',   code:'HMXCJA',  ci:'2026-04-18',co:'2026-04-24',nights:6, payout:1194.07,status:'confirmed', guests:2},
   {guest:'Shemshia Denson',    code:'HMWZA2',  ci:'2026-04-24',co:'2026-04-28',nights:4, payout:0,      status:'cancelled', guests:2, cancelledBy:'airbnb'},
@@ -932,7 +932,7 @@ function initOverview(){
   const ds = _ds(now);
   const ci = BOOKINGS.filter(b=>b.ci===ds && b.status!=='cancelled' && b.status!=='past');
   const co = BOOKINGS.filter(b=>b.co===ds && b.status!=='cancelled');
-  const ih = BOOKINGS.filter(b=>b.ci<=ds && b.co>ds && b.status!=='cancelled');
+  const ih = BOOKINGS.filter(b=>b.ci<=ds && b.co>ds && b.status!=='cancelled' && b.status!=='wc');
   document.getElementById('ov-ci').textContent = ci.length || '—';
   document.getElementById('ov-co').textContent = co.length || '—';
   document.getElementById('ov-ih').textContent = ih.length || '—';
@@ -941,7 +941,7 @@ function initOverview(){
   loadBal(true);
 
   // Next arrival
-  const upcoming = BOOKINGS.filter(b=>b.ci>ds && b.status!=='cancelled' && b.status!=='wc').sort((a,b)=>a.ci.localeCompare(b.ci));
+  const today_date = _ds(now); const upcoming = BOOKINGS.filter(b=>b.co>today_date && b.status!=='cancelled' && b.status!=='wc').sort((a,b)=>a.ci.localeCompare(b.ci));
   if(upcoming.length){
     const n = upcoming[0];
     const diff = Math.round((_d(n.ci)-now)/86400000);
@@ -1011,9 +1011,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeEleme
 // PLAN AHEAD
 function renderPlan(){
   const plans = [
-    {date:'Mar 25',title:'Kendal Brame arrives · 3 nights',sub:'$539 · Confirm cleaning window after Tevfik departs Mar 22'},
-    {date:'Mar 30',title:'Nadia Frison — 10-night stay begins',sub:'$1,945 · Longest stay to date · High importance for 5★'},
-    {date:'Apr 15',title:'Q1 Federal estimated tax due',sub:'Set aside before this date · Check Tax Reserve tab'},
+    {date:'Apr 18',title:'Javier Rodriguez arrives · 6 nights',sub:'$1,194 · Prepare for 6-night stay'},
+    {date:'May 1',title:'Q2 2026 Property Tax due',sub:'$2,292.48 · Block 214 Lot 23 · Bayonne'},
+    {date:'May 10',title:'Chengyue Qian · 3 nights',sub:'$690 · Back-to-back May bookings'},
+    {date:'Jun 16',title:'Q2 Federal estimated tax due',sub:'Set aside before this date · Check Tax Reserve tab'},
     {date:'Jul 18',title:'⚽ World Cup window opens',sub:'5 nights locked at $1,500/night · $7,500 potential'},
   ];
   document.getElementById('plan-list').innerHTML = plans.map(p=>`
@@ -1052,7 +1053,7 @@ function updateCalCards(){
   document.getElementById('cal-nights').textContent=nights+' of '+dInM+'d';
   document.getElementById('cal-occ').textContent=Math.round((nights/dInM)*100)+'% occupancy';
   const now=new Date(),ds=_ds(now);
-  const upcoming=BOOKINGS.filter(b=>b.ci>ds&&b.status!=='cancelled'&&b.status!=='wc').sort((a,b)=>a.ci.localeCompare(b.ci));
+  const upcoming=BOOKINGS.filter(b=>b.co>ds&&b.status!=='cancelled'&&b.status!=='wc').sort((a,b)=>a.ci.localeCompare(b.ci));
   if(upcoming.length){
     const n=upcoming[0];const diff=Math.round((_d(n.ci)-now)/86400000);
     document.getElementById('cal-next').textContent=diff===0?'Today':diff===1?'Tomorrow':'In '+diff+'d';
@@ -1451,29 +1452,18 @@ async function masterSync(){
   try{
     // PriceLabs
     st.textContent='Fetching live data…';
-    const res=await fetch(PL_PROXY);
+    const res=await fetch(PL_PROXY+'?listing_id='+LISTING_ID,{redirect:'follow'});
     if(!res.ok)throw new Error('PriceLabs '+res.status);
     const data=await res.json();
     const l=data.listings?.[0];
     if(l){
       const p=v=>parseFloat(String(v).replace(/[^0-9.]/g,''))||0;
-      const pl={yourOcc7:p(l.occupancy_next_7),mktOcc7:p(l.market_occupancy_next_7),yourOcc30:p(l.occupancy_next_30),mktOcc30:p(l.market_occupancy_next_30),yourOcc60:p(l.occupancy_next_60),mktOcc60:p(l.market_occupancy_next_60),recBase:l.recommended_base_price,priceFloor:l.min,priceBase:l.base,lastPushed:l.last_refreshed_at,fetchedAt:new Date().toISOString()};
+      const pct=v=>Math.round(p(v)*100);const pl={yourOcc7:pct(l.occupancy_next_7),mktOcc7:pct(l.market_occupancy_next_7),yourOcc30:pct(l.occupancy_next_30),mktOcc30:pct(l.market_occupancy_next_30),yourOcc60:pct(l.occupancy_next_60),mktOcc60:pct(l.market_occupancy_next_60),recBase:l.recommended_base_price,priceFloor:l.min_price||l.min,priceBase:l.base_price||l.base,lastPushed:l.last_refreshed_at,fetchedAt:new Date().toISOString()};
       localStorage.setItem('cam_pl',JSON.stringify(pl));
       applyPL(pl);
       st.textContent='✓ Pricing · Fetching reviews…';
-      // Fetch reviews from tRPC
-      try{
-        const revRes=await fetch('/api/trpc/reviews.fetch',{method:'GET',credentials:'include'});
-        if(revRes.ok){
-          const revData=await revRes.json();
-          if(revData.result?.data){
-            applyReviews(revData.result.data);
-            st.textContent='✓ Pricing & Reviews · Getting briefing…';
-          }
-        }
-      }catch(revErr){
-        console.warn('[Reviews Fetch]',revErr);
-      }
+      // Reviews: seeded statically — Gmail sync requires server-side auth
+      st.textContent='✓ Pricing data loaded · Getting briefing…';
       // AI briefing
       const briefing=await getBriefing(pl);
       showToast(pl,briefing);
@@ -1514,7 +1504,7 @@ function applyReviews(reviewsData){
 }
 
 function applyPL(pl){
-  const fmt=n=>Math.round(n)+'%';
+  const fmt=n=>Math.round(n)+'%'; // values already as integers
   document.querySelectorAll('[data-live="your-occ-7"]').forEach(e=>e.textContent=fmt(pl.yourOcc7));
   document.querySelectorAll('[data-live="mkt-occ-7"]').forEach(e=>e.textContent=fmt(pl.mktOcc7));
   document.querySelectorAll('[data-live="your-occ-30"]').forEach(e=>e.textContent=fmt(pl.yourOcc30));
