@@ -6,7 +6,7 @@
 <title>Camichino Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,700;1,6..96,300;1,6..96,400&family=DM+Sans:wght@200;300;400;500&family=Tenor+Sans&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" async></script>
 <style>
 :root{
   --cream:#eeeae4;--taupe:#afa298;--brown:#473d36;
@@ -261,8 +261,21 @@ tr:hover td{background:var(--surface)}
 		<meta name="twitter:description" content="A hosted version of the Camichino Command Center app, migrated from a single HTML file to a React-based structure for easier updates and management.">
 		<meta name="twitter:image" content="https://files.manuscdn.com/webdev_screenshots/2026/04/10/njt5p5thw5cCojSMEPVtAk.png?x-oss-process=image/resize,w_1200/crop,h_630,x_0,y_0">
 		<meta name="twitter:image:width" content="1200">
-		<meta name="twitter:image:height" content="630"><link rel="canonical" href="https://dashboard.camichino.com" /></head>
+		<meta name="twitter:image:height" content="630"><link rel="canonical" href="https://dashboard.camichino.com" /><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+</head>
 <body ontouchstart="">
+<script>
+// Inline boot check - runs immediately
+window._jsOK = true;
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.Chart) {
+        // Chart.js not loaded yet - init charts when it loads, proceed with everything else
+        window._chartPending = true;
+    }
+});
+</script>
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
@@ -1570,7 +1583,7 @@ function loadCachedPL(){
 // ═══════════════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════════════
-window.addEventListener('load',function(){
+document.addEventListener('DOMContentLoaded',function(){
   initOverview();
   initCal();
   loadCachedPL();
