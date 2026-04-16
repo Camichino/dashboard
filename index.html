@@ -843,6 +843,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="adv-btn" onclick="runAdv('Flag my Schedule E tax deductions — what can I deduct, 50% rule, what I might be missing')"><div class="adv-btn-t">Flag tax deductions</div><div class="adv-btn-s">Schedule E opportunities</div></button>
     <button class="adv-btn" onclick="runAdv('What should I focus on this week — prioritized action items based on current performance')"><div class="adv-btn-t">This week's priorities</div><div class="adv-btn-s">Top 3–5 action items</div></button>
   </div>
+  <div style="margin-bottom:16px">
+    <textarea id="adv-prompt" style="width:100%;padding:13px 16px;border:1px solid var(--border);border-radius:8px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:300;color:var(--charcoal);background:var(--surface);resize:none;outline:none;min-height:80px;line-height:1.6" placeholder="Or type your own question about Camichino..."></textarea>
+  </div>
   <button id="adv-run" onclick="runAdv(null)">■ Run Full Business Audit</button>
   <div id="adv-loading"><span class="spin">◆</span>Analyzing your business data…</div>
   <div id="adv-out"></div>
@@ -1773,11 +1776,15 @@ function setAdvPrompt(text) {
   if (ta) ta.value = text;
 }
 
-async function runAdvisor() {
+async function runAdv(presetText) {
   var ta = el('adv-prompt');
   var btn = el('adv-run');
   var out = el('adv-out');
   var loading = el('adv-loading');
+  // Use preset text if provided, otherwise read from textarea
+  if (presetText) {
+    if (ta) ta.value = presetText;
+  }
   if (!ta || !ta.value.trim()) return;
   if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
   if (out) out.style.display = 'none';
