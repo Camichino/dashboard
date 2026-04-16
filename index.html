@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="g4" style="margin-bottom:16px">
       <div class="card"><div class="cl">Total Expenses YTD</div><div class="cv red" id="biz-total">$0</div><div class="cs" id="biz-count">0 entries</div></div>
       <div class="card"><div class="cl">Largest Category</div><div class="cv sm" id="biz-top">—</div><div class="cs" id="biz-top-amt"></div></div>
-      <div class="card"><div class="cl">50% Deductible</div><div class="cv green" id="biz-ded">$0</div><div class="cs">2-family home rule</div></div>
+      <div class="card"><div class="cl">Deductible</div><div class="cv green" id="biz-ded">$0</div><div class="cs">2-family home rule</div></div>
       <div class="card"><div class="cl">Net Operating Income (Actualized)</div><div class="cv" id="biz-noi">$0</div><div class="cs" id="biz-noi-sub">Revenue − expenses</div></div>
     </div>
     <!-- Table -->
@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>50% Ded.</th><th></th></tr></thead>
       <tbody id="bills-tbody"><tr><td colspan="6" style="text-align:center;color:var(--taupe);padding:24px;font-size:12px">No bills logged yet.</td></tr></tbody></table>
-      <div style="padding:9px 14px;background:var(--surface);border-top:1px solid var(--border);font-size:11px;color:var(--taupe)">50% deductible — 2-family home allocation rule. Confirm with CPA before filing.</div>
+      <div style="padding:9px 14px;background:var(--surface);border-top:1px solid var(--border);font-size:11px;color:var(--taupe)">Deductible — 2-family home allocation rule. Confirm with CPA before filing.</div>
     </div>
   </div>
 
@@ -1365,6 +1365,13 @@ function updateReserve() {
 }
 
 // Business expenses
+// ── EXPENSE ALLOCATION ────────────────────────
+// Property: 118 W 21st St, Bayonne NJ (2-family)
+// Rental unit (2F Airbnb): 998 SF
+// Personal residence (owner): 1,334 SF
+// Total: 2,332 SF  |  Rental share: 998/2332 = 42.8%
+// Direct Airbnb expenses (supplies, ads, cleaning): 100%
+// Shared expenses (mortgage, utilities, insurance, tax): 42.8%
 var BIZ_KEY = 'cam_biz_v1';
 function getBizExp() { try { return JSON.parse(localStorage.getItem(BIZ_KEY) || '[]'); } catch(e) { return []; } }
 function saveBizExp(items) { localStorage.setItem(BIZ_KEY, JSON.stringify(items)); }
@@ -1374,7 +1381,10 @@ function saveBizExp(items) { localStorage.setItem(BIZ_KEY, JSON.stringify(items)
 function renderBizExp() {
   var items = getBizExp();
   var total = items.reduce(function(s,e) { return s + (e.amount||0); }, 0);
-  var ded = total * 0.5;
+  // Allocation: 42.8% for shared expenses, 100% for direct Airbnb expenses
+  var DIRECT = ['Supplies & Amenities','Marketing','Cleaning & Turnover','Platform Fees','Other'];
+  function allocPct(cat) { return DIRECT.indexOf(cat) >= 0 ? 1.0 : 0.428; }
+  var ded = items.reduce(function(s,e) { return s + (e.amount||0) * allocPct(e.category||''); }, 0);
   // Actualized revenue only (completed stays that have paid out)
   var pastPayouts = BOOKINGS.filter(function(b) { return b.status === 'past' && b.guest !== 'Camille (Internal)'; })
     .reduce(function(s,b) { return s + b.payout; }, 0);
@@ -1409,7 +1419,7 @@ function renderBizExp() {
     rows += '<td>' + (e.description||'-') + '</td>';
     rows += '<td>' + (e.category||'-') + '</td>';
     rows += '<td>' + fmt$2(e.amount||0) + '</td>';
-    rows += '<td style="color:var(--green)">' + fmt$2((e.amount||0)*0.5) + '</td>';
+    rows += '<td style="color:var(--green)">' + fmt$2((e.amount||0) * allocPct(e.category||'')) + '</td>';
     rows += '<td><button class="btn btn-d" onclick="delBizExp(' + i + ')">Delete</button></td>';
     rows += '</tr>';
   });
@@ -1449,7 +1459,8 @@ function saveBills(items) { localStorage.setItem(BILLS_KEY, JSON.stringify(items
 function renderBills() {
   var items = getBills();
   var total = items.reduce(function(s,b) { return s + (b.amount||0); }, 0);
-  var ded = total * 0.5;
+  // Home bills are shared expenses — 42.8% rental allocation (998 SF / 2,332 SF)
+  var ded = total * 0.428;
   var ytdEl = document.querySelector('[data-bills-ytd]');
   if (!ytdEl) {
     // Use fixed text approach
@@ -1464,7 +1475,7 @@ function renderBills() {
   }
   var rows = '';
   items.forEach(function(b, i) {
-    rows += '<tr><td>' + (b.date||'-') + '</td><td>' + b.description + '</td><td>' + b.category + '</td><td>' + fmt$2(b.amount) + '</td><td style="color:var(--green)">' + fmt$2(b.amount*0.5) + '</td><td><button class="btn btn-d" onclick="delBill(' + i + ')">Del</button></td></tr>';
+    rows += '<tr><td>' + (b.date||'-') + '</td><td>' + b.description + '</td><td>' + b.category + '</td><td>' + fmt$2(b.amount) + '</td><td style="color:var(--green)">' + fmt$2(b.amount*0.428) + '</td><td><button class="btn btn-d" onclick="delBill(' + i + ')">Del</button></td></tr>';
   });
   tbody.innerHTML = rows;
 }
