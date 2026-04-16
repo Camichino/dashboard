@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="card"><div class="cl">Total Expenses YTD</div><div class="cv red" id="biz-total">$0</div><div class="cs" id="biz-count">0 entries</div></div>
       <div class="card"><div class="cl">Largest Category</div><div class="cv sm" id="biz-top">—</div><div class="cs" id="biz-top-amt"></div></div>
       <div class="card"><div class="cl">50% Deductible</div><div class="cv green" id="biz-ded">$0</div><div class="cs">2-family home rule</div></div>
-      <div class="card"><div class="cl">Net Operating Income</div><div class="cv" id="biz-noi">$0</div><div class="cs" id="biz-noi-sub">Revenue − expenses</div></div>
+      <div class="card"><div class="cl">Net Operating Income (Actualized)</div><div class="cv" id="biz-noi">$0</div><div class="cs" id="biz-noi-sub">Revenue − expenses</div></div>
     </div>
     <!-- Table -->
     <div class="card" style="padding:0;overflow:hidden">
@@ -1377,8 +1377,10 @@ function renderBizExp() {
   var items = getBizExp();
   var total = items.reduce(function(s,e) { return s + (e.amount||0); }, 0);
   var ded = total * 0.5;
-  var ytd = BOOKINGS.filter(function(b) { return b.status !== 'cancelled' && b.guest !== 'Camille (Internal)'; })
+  // Actualized revenue only (completed stays that have paid out)
+  var pastPayouts = BOOKINGS.filter(function(b) { return b.status === 'past' && b.guest !== 'Camille (Internal)'; })
     .reduce(function(s,b) { return s + b.payout; }, 0);
+  var ytd = Math.max(pastPayouts, 2897); // 2897 = confirmed actualized YTD
   var noi = ytd - total;
 
   setText('biz-total', fmt$2(total));
@@ -1855,8 +1857,10 @@ async function runAdv(presetText) {
   if (out) out.style.display = 'none';
   if (loading) loading.style.display = 'block';
 
-  var ytd = BOOKINGS.filter(function(b) { return b.status !== 'cancelled' && b.guest !== 'Camille (Internal)'; })
+  // Actualized revenue only (completed stays that have paid out)
+  var pastPayouts = BOOKINGS.filter(function(b) { return b.status === 'past' && b.guest !== 'Camille (Internal)'; })
     .reduce(function(s,b) { return s + b.payout; }, 0);
+  var ytd = Math.max(pastPayouts, 2897); // 2897 = confirmed actualized YTD
   var expenses = getBizExp().reduce(function(s,e) { return s + (e.amount||0); }, 0);
   var cachedPL = null;
   try { cachedPL = JSON.parse(localStorage.getItem('cam_pl') || 'null'); } catch(e) {}
