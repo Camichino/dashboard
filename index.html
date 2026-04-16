@@ -1725,7 +1725,7 @@ async function masterSync() {
     var l = data.listings && data.listings[0];
     if (l) {
       var p = function(v) { return parseFloat(String(v).replace(/[^0-9.]/g,'')) || 0; };
-      var pct = function(v) { return Math.round(p(v) * 100); };
+      var pct = function(v) { return Math.round(p(v)); }; // PriceLabs already returns percentages
       var pl = {
         yourOcc7:  pct(l.occupancy_next_7),    mktOcc7:  pct(l.market_occupancy_next_7),
         yourOcc30: pct(l.occupancy_next_30),   mktOcc30: pct(l.market_occupancy_next_30),
