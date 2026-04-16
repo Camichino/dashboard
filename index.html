@@ -1841,9 +1841,14 @@ async function runAdv(presetText) {
   var btn = el('adv-run');
   var out = el('adv-out');
   var loading = el('adv-loading');
-  // Use preset text if provided, otherwise read from textarea
+  // Use preset text if provided, otherwise use full audit prompt
   if (presetText) {
     if (ta) ta.value = presetText;
+  } else if (!ta || !ta.value.trim()) {
+    // Full audit - use comprehensive default prompt
+    var defaultPrompt = 'Run a complete business audit of Camichino. Cover: (1) pricing strategy vs market, (2) occupancy performance and gaps, (3) revenue trends and YTD vs target, (4) review score trajectory toward Superhost 4.8, (5) top 3 action items for this week tagged [URGENT], [THIS WEEK], or [THIS MONTH].';
+    if (ta) ta.value = defaultPrompt;
+    else return;
   }
   if (!ta || !ta.value.trim()) return;
   if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
