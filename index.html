@@ -1776,6 +1776,66 @@ function setAdvPrompt(text) {
   if (ta) ta.value = text;
 }
 
+function renderAdvOutput(text) {
+  // Parse markdown-style response into styled HTML cards
+  var lines = text.split('\n');
+  var result = '';
+  var inSection = false;
+  var sectionContent = '';
+  var sectionTitle = '';
+  var sectionColor = 'var(--taupe)';
+
+  function flushSection() {
+    if (!sectionContent.trim() && !sectionTitle) return;
+    var color = sectionColor;
+    result += '<div style="margin-bottom:18px;border-left:3px solid ' + color + ';padding:14px 18px;background:rgba(255,255,255,.04);border-radius:0 8px 8px 0">';
+    if (sectionTitle) {
+      result += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:' + color + ';margin-bottom:10px">' + sectionTitle + '</div>';
+    }
+    result += '<div style="font-size:13px;color:rgba(238,234,228,.85);line-height:1.8">' + sectionContent + '</div>';
+    result += '</div>';
+    sectionContent = '';
+    sectionTitle = '';
+  }
+
+  lines.forEach(function(line) {
+    var trimmed = line.trim();
+    if (!trimmed || trimmed === '---') {
+      // section divider - flush current
+      if (sectionContent.trim()) flushSection();
+      return;
+    }
+    // ## Heading = new section
+    if (trimmed.startsWith('## ')) {
+      flushSection();
+      sectionTitle = trimmed.replace(/^## /, '');
+      // Color-code sections
+      var t = sectionTitle.toUpperCase();
+      if (t.includes('HEADLINE')) sectionColor = 'var(--cream)';
+      else if (t.includes('METRIC')) sectionColor = '#6ab88a';
+      else if (t.includes('OPPORTUNIT')) sectionColor = 'var(--gold)';
+      else if (t.includes('RISK')) sectionColor = '#e07070';
+      else if (t.includes('ACTION')) sectionColor = 'var(--ox)';
+      else sectionColor = 'var(--taupe)';
+      return;
+    }
+    // **bold** text
+    var formatted = trimmed
+      .replace(/\*\*([^*]+)\*\*/g, '<strong style="color:var(--cream);font-weight:500">$1</strong>')
+      .replace(/\[URGENT\]/g, '<span style="background:rgba(73,10,10,.5);color:#ffb3b3;font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">URGENT</span>')
+      .replace(/\[THIS WEEK\]/g, '<span style="background:rgba(200,169,110,.25);color:var(--gold);font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">THIS WEEK</span>')
+      .replace(/\[THIS MONTH\]/g, '<span style="background:rgba(90,122,90,.2);color:#8aba8a;font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">THIS MONTH</span>');
+    // Bullet points
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      sectionContent += '<div style="display:flex;gap:10px;margin-bottom:6px;align-items:flex-start"><span style="color:var(--ox);flex-shrink:0;margin-top:2px">▸</span><span>' + formatted.replace(/^[-*] /, '') + '</span></div>';
+    } else {
+      sectionContent += '<div style="margin-bottom:6px">' + formatted + '</div>';
+    }
+  });
+  flushSection();
+  return result || '<div style="color:var(--taupe);font-size:13px">No response received.</div>';
+}
+
 async function runAdv(presetText) {
   var ta = el('adv-prompt');
   var btn = el('adv-run');
@@ -1817,13 +1877,7 @@ async function runAdv(presetText) {
     var text = (d.content && d.content[0] && d.content[0].text) || 'No response received.';
 
     if (out) {
-      var sections = text.split('\n\n');
-      var html = '';
-      sections.forEach(function(section) {
-        if (!section.trim()) return;
-        html += '<div class="adv-sec"><div class="adv-line">' + section.replace(/\n/g, '<br>') + '</div></div>';
-      });
-      out.innerHTML = html;
+      out.innerHTML = renderAdvOutput(text);
       out.style.display = 'block';
     }
   } catch(e) {
