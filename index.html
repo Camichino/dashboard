@@ -1387,7 +1387,7 @@ function renderBizExp() {
   setText('biz-count', items.length + ' entries');
   setText('biz-ded', fmt$2(ded));
   setText('biz-noi', fmt$(noi));
-  setText('biz-noi-sub', noi >= 0 ? 'Net positive' : 'Net negative');
+  setText('biz-noi-sub', 'Actualized $' + ytd.toLocaleString() + ' - expenses');
 
   // Category breakdown
   var byCat = {};
