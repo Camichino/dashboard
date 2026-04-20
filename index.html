@@ -1030,31 +1030,109 @@ function initOverview() {
 }
 
 // ── FOCUS BOARD ──────────────────────────────
-var FOCUS_KEY = 'cam_focus_v1';
+var FOCUS_KEY = 'cam_focus_v2';
+var ARCHIVE_KEY = 'cam_archive_v1';
+var FOCUS_SEEDED = 'cam_focus_seeded_v1';
 var DEFAULT_FOCUS = [
-  {id:'f1', title:'Switch to Strict cancellation policy', sub:'26% rate - Airbnb settings > Policies', tag:'tu', label:'Urgent', done:false},
-  {id:'f2', title:'Review Apr-Jun occupancy gaps',        sub:'Fill open windows before season peak',  tag:'tg', label:'Growth', done:false},
-  {id:'f3', title:'Log Q1 tax estimate (due Apr 15)',     sub:'First quarterly payment - Tax Reserve tab', tag:'tf', label:'Finance', done:false},
-  {id:'f4', title:'Confirm Javier Rodriguez arrival Apr 18', sub:'6 nights, $1,194 - highest upcoming payout', tag:'tu', label:'Urgent', done:false},
+  {id:'f1', title:'Switch to Strict cancellation policy', sub:'26% cancellation rate - Airbnb > Policies', tag:'tu', label:'Urgent', done:false},
+  {id:'f2', title:'Review Apr-Jun occupancy gaps',        sub:'Fill open windows before season peak',      tag:'tg', label:'Growth', done:false},
+  {id:'f3', title:'Confirm Javier Rodriguez - Apr 18',   sub:'6 nights - $1,194 - check AC on by 3PM',    tag:'tu', label:'Urgent', done:false},
+  {id:'f4', title:'Add Home Depot + Lowes receipt amounts', sub:'Two receipts pending from Apr 18-19',     tag:'tf', label:'Finance', done:false},
 ];
 
 function getFocus() {
-  try { return JSON.parse(localStorage.getItem(FOCUS_KEY)) || DEFAULT_FOCUS; } catch(e) { return DEFAULT_FOCUS; }
+  try {
+    var stored = localStorage.getItem(FOCUS_KEY);
+    if (stored) return JSON.parse(stored);
+    // First load — seed from defaults so state is always stored
+    saveFocus(DEFAULT_FOCUS.map(function(f) { return Object.assign({}, f); }));
+    return getFocus();
+  } catch(e) { return DEFAULT_FOCUS; }
 }
+
+function getArchive() {
+  try { return JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]'); } catch(e) { return []; }
+}
+
 function saveFocus(items) { localStorage.setItem(FOCUS_KEY, JSON.stringify(items)); }
+function saveArchive(items) { localStorage.setItem(ARCHIVE_KEY, JSON.stringify(items)); }
+
+function archiveCompleted() {
+  var items = getFocus();
+  var done = items.filter(function(f) { return f.done; });
+  var active = items.filter(function(f) { return !f.done; });
+  if (!done.length) return;
+  var archive = getArchive();
+  var now = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  done.forEach(function(f) { f.archivedOn = now; archive.unshift(f); });
+  saveFocus(active);
+  saveArchive(archive);
+  renderFocus();
+}
 
 function renderFocus() {
   var items = getFocus();
+  var archive = getArchive();
   var container = el('focus-list');
   if (!container) return;
-  var html = '';
-  items.forEach(function(f) {
-    html += '<div class="fi ' + (f.done ? 'done' : '') + '" data-id="' + f.id + '">';
-    html += '<button class="fck ' + (f.done ? 'on' : '') + '" onclick="toggleFocus(\'' + f.id + '\')"></button>';
-    html += '<div style="flex:1;min-width:0"><div class="fi-t">' + f.title + '</div><div class="fi-s">' + f.sub + '</div></div>';
-    html += '<span class="ftag ' + f.tag + '">' + f.label + '</span></div>';
+  var active = items.filter(function(f) { return !f.done; });
+  var done = items.filter(function(f) { return f.done; });
+  var h = '';
+
+  // Active tasks
+  if (!active.length && !done.length) {
+    h += '<div style="color:var(--taupe);font-size:12px;padding:12px 0;text-align:center">All tasks complete. Add a new one below.</div>';
+  }
+  active.forEach(function(f) {
+    h += '<div class="fi" data-id="' + f.id + '">';
+    h += '<button class="fck" onclick="toggleFocus(\'' + f.id + '\')" style="touch-action:manipulation"></button>';
+    h += '<div style="flex:1;min-width:0"><div class="fi-t">' + f.title + '</div><div class="fi-s">' + f.sub + '</div></div>';
+    h += '<span class="ftag ' + f.tag + '">' + f.label + '</span></div>';
   });
-  container.innerHTML = html;
+
+  // Completed section
+  if (done.length) {
+    h += '<div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    h += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe)">' + done.length + ' completed</div>';
+    h += '<button onclick="archiveCompleted()" style="background:var(--ox);color:var(--cream);border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-family:Tenor Sans,sans-serif;letter-spacing:.06em;cursor:pointer;touch-action:manipulation">Archive</button>';
+    h += '</div>';
+    done.forEach(function(f) {
+      h += '<div class="fi done" data-id="' + f.id + '">';
+      h += '<button class="fck on" onclick="toggleFocus(\'' + f.id + '\')" style="touch-action:manipulation"></button>';
+      h += '<div style="flex:1;min-width:0"><div class="fi-t">' + f.title + '</div></div>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Archive count
+  if (archive.length) {
+    h += '<div style="margin-top:8px;font-size:11px;color:var(--taupe);cursor:pointer" onclick="toggleArchiveView()">';
+    h += '<span id="archive-toggle-lbl">' + archive.length + ' archived task' + (archive.length > 1 ? 's' : '') + ' ↓</span></div>';
+    h += '<div id="archive-view" style="display:none;margin-top:8px">';
+    archive.slice(0, 10).forEach(function(f) {
+      h += '<div style="font-size:11px;color:var(--taupe);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:8px">';
+      h += '<span style="text-decoration:line-through;flex:1">' + f.title + '</span>';
+      h += '<span style="font-size:10px;white-space:nowrap">' + (f.archivedOn || '') + '</span></div>';
+    });
+    if (archive.length > 10) h += '<div style="font-size:10px;color:var(--taupe);padding-top:4px">' + (archive.length - 10) + ' more archived</div>';
+    h += '</div>';
+  }
+
+  container.innerHTML = h;
+}
+
+function toggleArchiveView() {
+  var v = el('archive-view');
+  var lbl = el('archive-toggle-lbl');
+  if (!v) return;
+  var isOpen = v.style.display !== 'none';
+  v.style.display = isOpen ? 'none' : 'block';
+  if (lbl) {
+    var archive = getArchive();
+    lbl.textContent = archive.length + ' archived task' + (archive.length > 1 ? 's' : '') + (isOpen ? ' ↓' : ' ↑');
+  }
 }
 
 function toggleFocus(id) {
@@ -1069,7 +1147,7 @@ function addFocus() {
   var inp = el('focus-input');
   if (!inp || !inp.value.trim()) return;
   var items = getFocus();
-  items.push({id:'f'+Date.now(), title:inp.value.trim(), sub:'', tag:'to', label:'Task', done:false});
+  items.unshift({id:'f'+Date.now(), title:inp.value.trim(), sub:'', tag:'to', label:'Task', done:false});
   saveFocus(items);
   renderFocus();
   inp.value = '';
@@ -1078,6 +1156,47 @@ function addFocus() {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'focus-input') addFocus();
 });
+
+async function suggestTasks() {
+  var btn = el('suggest-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Thinking...'; }
+  var now = new Date();
+  var ds = _ds(now);
+  var upcoming = BOOKINGS.filter(function(b) {
+    return b.co > ds && b.status !== 'cancelled' && b.status !== 'past' && b.status !== 'wc';
+  }).sort(function(a,b){return a.ci.localeCompare(b.ci);}).slice(0,3);
+  var existingTitles = getFocus().map(function(f) { return f.title; }).join('; ');
+  var cachedPL = null;
+  try { cachedPL = JSON.parse(localStorage.getItem('cam_pl') || 'null'); } catch(e) {}
+  var prompt = 'You are the AI assistant for Camichino STR, Bayonne NJ. Today is ' + now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) + '.' +
+    ' Upcoming guests: ' + (upcoming.length ? upcoming.map(function(b){return b.guest+' checking in '+b.ci;}).join(', ') : 'none soon') + '.' +
+    ' Occupancy 30d: ' + (cachedPL ? cachedPL.yourOcc30+'% vs '+cachedPL.mktOcc30+'% market' : 'unknown') + '.' +
+    ' Cancellation rate: 26%.' +
+    ' Existing tasks (skip duplicates): ' + (existingTitles || 'none') + '.' +
+    ' Suggest exactly 3 specific, actionable tasks for Camille today. Each must be: concrete (not vague), under 60 chars, tied to real data above.' +
+    ' Reply ONLY with a JSON array of 3 objects: [{title, sub, tag, label}]' +
+    ' tag options: tu (urgent), tg (growth), tf (finance), to (other)' +
+    ' label options: Urgent, Growth, Finance, Task' +
+    ' No other text.';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+    });
+    var d = await res.json();
+    var text = (d.content && d.content[0] && d.content[0].text) || '[]';
+    var clean = text.replace(/```json|```/g,'').trim();
+    var suggestions = JSON.parse(clean);
+    var items = getFocus();
+    suggestions.forEach(function(s) {
+      items.unshift({id:'ai'+Date.now()+Math.random(), title:s.title||'', sub:s.sub||'', tag:s.tag||'to', label:s.label||'Task', done:false});
+    });
+    saveFocus(items);
+    renderFocus();
+  } catch(err) {}
+  if (btn) { btn.textContent = 'AI Suggest'; btn.disabled = false; }
+}
 
 // ── PLAN AHEAD ───────────────────────────────
 function renderPlan() {
