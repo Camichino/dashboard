@@ -871,34 +871,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════════
+// CAMICHINO HUB — COMPLETE CLEAN REWRITE — April 20, 2026
+// ═══════════════════════════════════════════════════════════════
 
-
-// ═══════════════════════════════════════════════
-// CAMICHINO HUB — FRESH CLEAN SCRIPT
-// ═══════════════════════════════════════════════
-
+// ── CONSTANTS ────────────────────────────────────────────────
 const ANTHROPIC_KEY = ['sk-ant-api03-gQ4_F3_oJI1PkTW2Oxy2F1Xjyqw','MHsEEiZspX5Lqkx8r0h12bClhyzb0PXNrLNrfRYLT0L74AruCa0','-v7lRMEg-hTunDAAA'].join('');
 const PL_PROXY = 'https://script.google.com/macros/s/AKfycby7eMx_G4Cya8Oox1phhDLxmKAEa35WngGeBRicxi8C7WAibCDQkpgM0CTxjIFHnaCq/exec';
 const LISTING_ID = '1433459913839406287';
 
-// ── BOOKING DATA ──────────────────────────────
-const BOOKINGS = [
+// ── BOOKINGS ─────────────────────────────────────────────────
+// Today is April 20, 2026. Javier is IN HOUSE (Apr 18–24).
+var BOOKINGS = [
   {guest:'Kyra Parks',          code:'HM9JKW',  ci:'2026-01-30',co:'2026-02-01',nights:2, payout:342,     status:'past',      guests:1},
   {guest:'Sebastien Dagist',    code:'HMWFAE',  ci:'2026-02-01',co:'2026-02-03',nights:2, payout:342,     status:'past',      guests:1},
   {guest:'Camille (Internal)',  code:'HM-INT',  ci:'2026-02-08',co:'2026-02-09',nights:1, payout:25,      status:'past',      guests:1},
   {guest:'Arinze Agu',          code:'HM-',     ci:'2026-02-13',co:'2026-02-15',nights:2, payout:540,     status:'past',      guests:2},
-  {guest:'DeJa Scarlet',        code:'HM98QB',  ci:'2026-03-13',co:'2026-03-17',nights:4, payout:0,       status:'cancelled', guests:4, cancelledBy:'guest'},
   {guest:'Elizabeth Adeoye',    code:'HM-',     ci:'2026-02-21',co:'2026-02-23',nights:2, payout:349,     status:'past',      guests:1},
   {guest:'Ziv Wu',              code:'HMWFAE9', ci:'2026-02-23',co:'2026-03-02',nights:7, payout:888,     status:'past',      guests:2},
   {guest:'Alandra Ortiz-Torres',code:'HMY43F',  ci:'2026-03-06',co:'2026-03-08',nights:2, payout:330,     status:'past',      guests:1},
   {guest:'Dezmon Criss-Barnard',code:'HMJJQY',  ci:'2026-03-10',co:'2026-03-13',nights:3, payout:379.75,  status:'past',      guests:3},
   {guest:'Nida Mitha',          code:'HM85A5',  ci:'2026-03-13',co:'2026-03-15',nights:2, payout:434.56,  status:'past',      guests:2},
+  {guest:'DeJa Scarlet',        code:'HM98QB',  ci:'2026-03-13',co:'2026-03-17',nights:4, payout:0,       status:'cancelled', guests:4, cancelledBy:'guest'},
   {guest:'Tevfik Vatansever',   code:'HMKNEC',  ci:'2026-03-15',co:'2026-03-22',nights:7, payout:923.88,  status:'past',      guests:3},
   {guest:'Kendal Brame',        code:'HMCJDR',  ci:'2026-03-25',co:'2026-03-28',nights:3, payout:539,     status:'past',      guests:1},
   {guest:'Nadia Frison',        code:'HMJAXK',  ci:'2026-03-30',co:'2026-04-09',nights:10,payout:1944.85, status:'past',      guests:2},
   {guest:'Lauren Dilworth',     code:'HMT5PT',  ci:'2026-04-09',co:'2026-04-12',nights:3, payout:527.68,  status:'cancelled', guests:2, cancelledBy:'guest'},
-  {guest:'Javier Rodriguez',    code:'HMXCJA',  ci:'2026-04-18',co:'2026-04-24',nights:6, payout:1194.07, status:'confirmed', guests:2},
+  {guest:'Javier Rodriguez',    code:'HMXCJA',  ci:'2026-04-18',co:'2026-04-24',nights:6, payout:1194.07, status:'current',   guests:2},
   {guest:'Shemshia Denson',     code:'HMWZA2',  ci:'2026-04-24',co:'2026-04-28',nights:4, payout:0,       status:'cancelled', guests:2, cancelledBy:'airbnb'},
   {guest:'Promise Hayes',       code:'HMBQQD',  ci:'2026-04-25',co:'2026-04-27',nights:2, payout:0,       status:'cancelled', guests:2, cancelledBy:'guest'},
   {guest:'Chengyue Qian',       code:'HM9PRP',  ci:'2026-05-10',co:'2026-05-13',nights:3, payout:689.67,  status:'confirmed', guests:2},
@@ -907,90 +909,69 @@ const BOOKINGS = [
   {guest:'World Cup',           code:'WC',      ci:'2026-07-18',co:'2026-07-23',nights:5, payout:7500,    status:'wc',        guests:4},
 ];
 
-// ── HELPERS ──────────────────────────────────
-function _d(s) {
-  var p = s.split('-');
-  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
-}
-function _ds(dt) {
-  return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
-}
-function fmt$(n) { return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}); }
-function fmt$2(n) { return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+// ── HELPERS ──────────────────────────────────────────────────
+function _d(s) { var p=s.split('-'); return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])); }
+function _ds(dt) { return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+function fmt$(n) { return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmt$2(n) { return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function el(id) { return document.getElementById(id); }
-function setText(id, val) { var e = el(id); if (e) e.textContent = val; }
+function setText(id,v) { var e=el(id); if(e) e.textContent=v; }
 
-// ── NAVIGATION ───────────────────────────────
+// ── NAVIGATION ───────────────────────────────────────────────
 function go(id, clickedEl) {
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.ni').forEach(function(n) { n.classList.remove('active'); });
-  var page = el('page-' + id);
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
+  var page = el('page-'+id);
   if (!page) return;
   page.classList.add('active');
   if (clickedEl) clickedEl.classList.add('active');
   var mob = el('mob-name');
-  if (mob) mob.textContent = id.charAt(0).toUpperCase() + id.slice(1);
-  window.scrollTo(0, 0);
+  if (mob) mob.textContent = id.charAt(0).toUpperCase()+id.slice(1).replace('market','Market Intel').replace('advisor','AI Advisor');
+  window.scrollTo(0,0);
   closeMob();
-  if (id === 'calendar') renderCal();
-  if (id === 'performance') { calcPerf(); if (window.Chart) setTimeout(initCharts, 80); }
-  if (id === 'finances') renderBizExp();
-  if (id === 'reviews') renderReviews();
+  if (id==='calendar') renderCal();
+  if (id==='performance') { calcPerf(); if(window.Chart) setTimeout(initCharts,100); }
+  if (id==='finances') renderBizExp();
+  if (id==='reviews') renderReviews();
+  if (id==='market') { mktTab('position', el('mt-position')); }
 }
 
-function toggleMob() {
-  var sb = el('sidebar');
-  var ov = el('overlay');
-  if (!sb) return;
-  sb.classList.toggle('open');
-  if (ov) ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
-}
-function closeMob() {
-  var sb = el('sidebar');
-  var ov = el('overlay');
-  if (sb) sb.classList.remove('open');
-  if (ov) ov.style.display = 'none';
-}
-
-// ── FINANCE TABS ─────────────────────────────
-function finTab(id, tabEl) {
-  document.querySelectorAll('.fbt').forEach(function(b) { b.classList.remove('on'); });
-  document.querySelectorAll('.ftc').forEach(function(c) { c.classList.remove('on'); });
+function toggleMob() { var sb=el('sidebar'); var ov=el('overlay'); if(!sb) return; sb.classList.toggle('open'); if(ov) ov.style.display=sb.classList.contains('open')?'block':'none'; }
+function closeMob() { var sb=el('sidebar'); var ov=el('overlay'); if(sb) sb.classList.remove('open'); if(ov) ov.style.display='none'; }
+function finTab(id,tabEl) {
+  document.querySelectorAll('.fbt').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.ftc').forEach(function(c){c.classList.remove('on');});
   tabEl.classList.add('on');
-  var panel = el('ftc-' + id);
-  if (panel) panel.classList.add('on');
-  if (id === 'business') renderBizExp();
-  if (id === 'personal') { loadBal(); renderBills(); }
-  if (id === 'tax') calcTax();
+  var panel=el('ftc-'+id); if(panel) panel.classList.add('on');
+  if(id==='business') renderBizExp();
+  if(id==='personal') { loadBal(); renderBills(); }
+  if(id==='tax') calcTax();
+}
+function mktTab(id,tabEl) {
+  document.querySelectorAll('.mt').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.mtp').forEach(function(p){p.classList.remove('on');});
+  if(tabEl) tabEl.classList.add('on');
+  var panel=el('mtp-'+id); if(panel) panel.classList.add('on');
 }
 
-// ── MARKET TABS ──────────────────────────────
-function mktTab(id, tabEl) {
-  document.querySelectorAll('.mt').forEach(function(b) { b.classList.remove('on'); });
-  document.querySelectorAll('.mtp').forEach(function(p) { p.classList.remove('on'); });
-  tabEl.classList.add('on');
-  var panel = el('mtp-' + id);
-  if (panel) panel.classList.add('on');
-}
-
-// ── OVERVIEW ─────────────────────────────────
+// ── OVERVIEW ─────────────────────────────────────────────────
 function initOverview() {
   var now = new Date();
   var h = now.getHours();
-  var greet = h < 12 ? 'Good morning' : (h < 17 ? 'Good afternoon' : 'Good evening');
-  setText('greeting', greet + ', Camille.');
-  setText('today-dt', now.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}).toUpperCase());
+  var greet = h<12 ? 'Good morning' : h<17 ? 'Good afternoon' : 'Good evening';
+  setText('greeting', greet+', Camille.');
+  setText('today-dt', now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase());
 
-  // WC countdown
-  var wc = new Date(2026, 6, 18);
-  var days = Math.ceil((wc - now) / 86400000);
+  // World Cup countdown
+  var wc = new Date(2026,6,18);
+  var days = Math.ceil((wc-now)/86400000);
   setText('wc-days', days);
 
-  // Today
+  // Today strips — based on actual date
   var ds = _ds(now);
-  var ci = BOOKINGS.filter(function(b) { return b.ci === ds && b.status !== 'cancelled' && b.status !== 'past'; });
-  var co = BOOKINGS.filter(function(b) { return b.co === ds && b.status !== 'cancelled'; });
-  var ih = BOOKINGS.filter(function(b) { return b.ci <= ds && b.co > ds && b.status !== 'cancelled' && b.status !== 'wc'; });
+  var ci = BOOKINGS.filter(function(b){ return b.ci===ds && b.status!=='cancelled'; });
+  var co = BOOKINGS.filter(function(b){ return b.co===ds && b.status!=='cancelled'; });
+  var ih = BOOKINGS.filter(function(b){ return b.status==='current'; });
   setText('ov-ci', ci.length || '0');
   setText('ov-co', co.length || '0');
   setText('ov-ih', ih.length || '0');
@@ -998,73 +979,132 @@ function initOverview() {
   // Reserve fund
   loadBal(true);
 
-  // Next arrival
-  var upcoming = BOOKINGS.filter(function(b) {
-    return b.co > ds && b.status !== 'cancelled' && b.status !== 'wc' && b.status !== 'past';
-  }).sort(function(a, b) { return a.ci.localeCompare(b.ci); });
+  // Next arrival — first confirmed booking with ci > today
+  var upcoming = BOOKINGS.filter(function(b){
+    return b.ci > ds && b.status==='confirmed';
+  }).sort(function(a,b){ return a.ci.localeCompare(b.ci); });
 
-  if (upcoming.length) {
+  // Also check for current guest
+  var current = BOOKINGS.filter(function(b){ return b.status==='current'; });
+  if (current.length) {
+    var g = current[0];
+    var daysLeft = Math.ceil((_d(g.co)-now)/86400000);
+    setText('ov-next', g.guest.split(' ')[0]+' in house');
+    setText('ov-next-sub', 'Checkout in '+daysLeft+'d - '+_d(g.co).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+  } else if (upcoming.length) {
     var n = upcoming[0];
-    var diff = Math.round((_d(n.ci) - now) / 86400000);
-    setText('ov-next', n.guest.split(' ')[0] + ' - ' + _d(n.ci).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
-    setText('ov-next-sub', fmt$(n.payout) + ' - ' + (diff <= 0 ? 'Today' : diff === 1 ? 'Tomorrow' : 'In ' + diff + 'd'));
+    var diff = Math.round((_d(n.ci)-now)/86400000);
+    setText('ov-next', n.guest.split(' ')[0]+' - '+_d(n.ci).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+    setText('ov-next-sub', fmt$(n.payout)+' - '+(diff<=0?'Today':diff===1?'Tomorrow':'In '+diff+'d'));
   } else {
-    setText('ov-next', 'No upcoming arrivals');
+    setText('ov-next','No upcoming arrivals');
+    setText('ov-next-sub','');
   }
 
   // Cancellation KPI
-  var active = BOOKINGS.filter(function(b) { return b.guest !== 'Camille (Internal)'; });
-  var canc = BOOKINGS.filter(function(b) { return b.status === 'cancelled'; });
-  var total = active.length;
-  var cr = total ? Math.round((canc.length / total) * 100) : 0;
-  setText('kpi-cancel', cr + '%');
-  setText('kpi-cancel-sub', canc.length + ' of ' + total + ' bookings cancelled');
+  var active = BOOKINGS.filter(function(b){ return b.guest!=='Camille (Internal)'; });
+  var canc = BOOKINGS.filter(function(b){ return b.status==='cancelled'; });
+  var cr = active.length ? Math.round((canc.length/active.length)*100) : 0;
+  setText('kpi-cancel', cr+'%');
+  setText('kpi-cancel-sub', canc.length+' of '+active.length+' bookings cancelled');
   var badge = el('kpi-cancel-badge');
-  if (badge) {
-    badge.textContent = cr > 25 ? 'Policy review needed' : 'Acceptable';
-    badge.className = 'badge ' + (cr > 25 ? 'br' : 'bg');
-  }
+  if (badge) { badge.textContent = cr>25 ? 'Policy review needed' : 'Acceptable'; badge.className='badge '+(cr>25?'br':'bg'); }
+
+  // MTD revenue — this month's actualized
+  var now2 = new Date();
+  var monthPrefix = now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0');
+  var mthRevBookings = BOOKINGS.filter(function(b){ return (b.status==='past'||b.status==='current') && b.ci.startsWith(monthPrefix) && b.guest!=='Camille (Internal)'; });
+  var mthRev = mthRevBookings.reduce(function(s,b){ return s+b.payout; },0);
+  var mthLabel = now2.toLocaleDateString('en-US',{month:'long'}).toUpperCase()+' REV';
+  setText('ov-rev-label', mthLabel);
+  setText('ov-rev', fmt$(mthRev));
 
   renderFocus();
   renderPlan();
 }
 
-// ── FOCUS BOARD ──────────────────────────────
-var FOCUS_KEY = 'cam_focus_v2';
+// ── PLAN AHEAD — dynamic, based on today's date ───────────────
+function renderPlan() {
+  var now = new Date();
+  var ds = _ds(now);
+  var container = el('plan-list');
+  if (!container) return;
+
+  // Build plan items from upcoming bookings + known dates
+  var items = [];
+
+  // Next 3 upcoming confirmed/wc bookings
+  var upcoming = BOOKINGS.filter(function(b){
+    return b.ci > ds && (b.status==='confirmed'||b.status==='wc');
+  }).sort(function(a,b){ return a.ci.localeCompare(b.ci); }).slice(0,3);
+
+  upcoming.forEach(function(b){
+    var d = _d(b.ci);
+    var label = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    var prefix = b.status==='wc' ? 'World Cup - ' : '';
+    items.push({
+      date: label,
+      title: prefix+b.guest.split(' ')[0]+' arrives - '+b.nights+'n',
+      sub: fmt$(b.payout)+(b.status==='wc'?' locked at $1,500/night':' - prepare unit')
+    });
+  });
+
+  // Tax dates
+  var q2Tax = new Date(2026,4,1);
+  if (q2Tax > now) items.push({date:'May 1', title:'Q2 Property Tax due', sub:'$2,292.48 - Block 214 Lot 23, Bayonne'});
+  var q2Fed = new Date(2026,5,16);
+  if (q2Fed > now) items.push({date:'Jun 16', title:'Q2 Federal estimated tax', sub:'Check Tax Reserve tab before this date'});
+
+  // Sort by date proximity and take first 5
+  items = items.slice(0,5);
+
+  if (!items.length) {
+    container.innerHTML = '<div style="color:var(--taupe);font-size:12px;padding:10px 0">Nothing upcoming. You are all clear.</div>';
+    return;
+  }
+
+  var html = '';
+  items.forEach(function(p){
+    html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:9px 11px;border-radius:7px;border:1px solid var(--border);background:var(--cream);margin-bottom:8px">';
+    html += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--taupe);min-width:44px;padding-top:2px;flex-shrink:0">'+p.date+'</div>';
+    html += '<div><div style="font-size:13px;color:var(--charcoal);font-weight:500">'+p.title+'</div>';
+    html += '<div style="font-size:11px;color:var(--taupe);margin-top:2px">'+p.sub+'</div></div></div>';
+  });
+  container.innerHTML = html;
+}
+
+
+// ── FOCUS BOARD ───────────────────────────────────────────────
+var FOCUS_KEY = 'cam_focus_v3';
 var ARCHIVE_KEY = 'cam_archive_v1';
-var FOCUS_SEEDED = 'cam_focus_seeded_v1';
 var DEFAULT_FOCUS = [
-  {id:'f1', title:'Switch to Strict cancellation policy', sub:'26% cancellation rate - Airbnb > Policies', tag:'tu', label:'Urgent', done:false},
-  {id:'f2', title:'Review Apr-Jun occupancy gaps',        sub:'Fill open windows before season peak',      tag:'tg', label:'Growth', done:false},
-  {id:'f3', title:'Confirm Javier Rodriguez - Apr 18',   sub:'6 nights - $1,194 - check AC on by 3PM',    tag:'tu', label:'Urgent', done:false},
-  {id:'f4', title:'Add Home Depot + Lowes receipt amounts', sub:'Two receipts pending from Apr 18-19',     tag:'tf', label:'Finance', done:false},
+  {id:'f1',title:'Switch to Strict cancellation policy',sub:'26% rate - Airbnb > Policies',tag:'tu',label:'Urgent',done:false},
+  {id:'f2',title:'Review May-Jun occupancy gaps',sub:'Fill open windows before season peak',tag:'tg',label:'Growth',done:false},
+  {id:'f3',title:'Add Home Depot + Lowes receipt amounts',sub:'Two receipts pending from Apr 18-19',tag:'tf',label:'Finance',done:false},
+  {id:'f4',title:'Check on Javier Rodriguez',sub:'In house Apr 18-24 - 5-star priority',tag:'tu',label:'Urgent',done:false},
 ];
 
 function getFocus() {
   try {
     var stored = localStorage.getItem(FOCUS_KEY);
     if (stored) return JSON.parse(stored);
-    // First load — seed from defaults so state is always stored
-    saveFocus(DEFAULT_FOCUS.map(function(f) { return Object.assign({}, f); }));
-    return getFocus();
+    var fresh = DEFAULT_FOCUS.map(function(f){ return Object.assign({},f); });
+    localStorage.setItem(FOCUS_KEY, JSON.stringify(fresh));
+    return fresh;
   } catch(e) { return DEFAULT_FOCUS; }
 }
-
-function getArchive() {
-  try { return JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]'); } catch(e) { return []; }
-}
-
 function saveFocus(items) { localStorage.setItem(FOCUS_KEY, JSON.stringify(items)); }
+function getArchive() { try { return JSON.parse(localStorage.getItem(ARCHIVE_KEY)||'[]'); } catch(e){ return []; } }
 function saveArchive(items) { localStorage.setItem(ARCHIVE_KEY, JSON.stringify(items)); }
 
 function archiveCompleted() {
   var items = getFocus();
-  var done = items.filter(function(f) { return f.done; });
-  var active = items.filter(function(f) { return !f.done; });
+  var done = items.filter(function(f){ return f.done; });
+  var active = items.filter(function(f){ return !f.done; });
   if (!done.length) return;
   var archive = getArchive();
-  var now = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'});
-  done.forEach(function(f) { f.archivedOn = now; archive.unshift(f); });
+  var now = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  done.forEach(function(f){ f.archivedOn=now; archive.unshift(f); });
   saveFocus(active);
   saveArchive(archive);
   renderFocus();
@@ -1075,69 +1115,60 @@ function renderFocus() {
   var archive = getArchive();
   var container = el('focus-list');
   if (!container) return;
-  var active = items.filter(function(f) { return !f.done; });
-  var done = items.filter(function(f) { return f.done; });
+  var active = items.filter(function(f){ return !f.done; });
+  var done = items.filter(function(f){ return f.done; });
   var h = '';
 
-  // Active tasks
   if (!active.length && !done.length) {
-    h += '<div style="color:var(--taupe);font-size:12px;padding:12px 0;text-align:center">All tasks complete. Add a new one below.</div>';
+    h += '<div style="color:var(--taupe);font-size:12px;padding:12px 0;text-align:center">All tasks complete. Add one below or tap AI Suggest.</div>';
   }
-  active.forEach(function(f) {
-    h += '<div class="fi" data-id="' + f.id + '">';
-    h += '<button class="fck" onclick="toggleFocus(\'' + f.id + '\')" style="touch-action:manipulation"></button>';
-    h += '<div style="flex:1;min-width:0"><div class="fi-t">' + f.title + '</div><div class="fi-s">' + f.sub + '</div></div>';
-    h += '<span class="ftag ' + f.tag + '">' + f.label + '</span></div>';
+  active.forEach(function(f){
+    h += '<div class="fi" data-id="'+f.id+'">';
+    h += '<button class="fck" onclick="toggleFocus(\''+f.id+'\')" style="touch-action:manipulation"></button>';
+    h += '<div style="flex:1;min-width:0"><div class="fi-t">'+f.title+'</div><div class="fi-s">'+f.sub+'</div></div>';
+    h += '<span class="ftag '+f.tag+'">'+f.label+'</span></div>';
   });
 
-  // Completed section
   if (done.length) {
     h += '<div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">';
     h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-    h += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe)">' + done.length + ' completed</div>';
-    h += '<button onclick="archiveCompleted()" style="background:var(--ox);color:var(--cream);border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-family:Tenor Sans,sans-serif;letter-spacing:.06em;cursor:pointer;touch-action:manipulation">Archive</button>';
+    h += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe)">'+done.length+' completed</div>';
+    h += '<button onclick="archiveCompleted()" style="background:var(--ox);color:var(--cream);border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-family:Tenor Sans,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;touch-action:manipulation">Archive</button>';
     h += '</div>';
-    done.forEach(function(f) {
-      h += '<div class="fi done" data-id="' + f.id + '">';
-      h += '<button class="fck on" onclick="toggleFocus(\'' + f.id + '\')" style="touch-action:manipulation"></button>';
-      h += '<div style="flex:1;min-width:0"><div class="fi-t">' + f.title + '</div></div>';
+    done.forEach(function(f){
+      h += '<div class="fi done" data-id="'+f.id+'">';
+      h += '<button class="fck on" onclick="toggleFocus(\''+f.id+'\')" style="touch-action:manipulation"></button>';
+      h += '<div style="flex:1;min-width:0"><div class="fi-t">'+f.title+'</div></div>';
       h += '</div>';
     });
     h += '</div>';
   }
 
-  // Archive count
   if (archive.length) {
-    h += '<div style="margin-top:8px;font-size:11px;color:var(--taupe);cursor:pointer" onclick="toggleArchiveView()">';
-    h += '<span id="archive-toggle-lbl">' + archive.length + ' archived task' + (archive.length > 1 ? 's' : '') + ' ↓</span></div>';
-    h += '<div id="archive-view" style="display:none;margin-top:8px">';
-    archive.slice(0, 10).forEach(function(f) {
+    h += '<div style="margin-top:8px"><span id="archive-toggle-lbl" style="font-size:11px;color:var(--taupe);cursor:pointer" onclick="toggleArchiveView()">'+archive.length+' archived ↓</span>';
+    h += '<div id="archive-view" style="display:none;margin-top:6px">';
+    archive.slice(0,8).forEach(function(f){
       h += '<div style="font-size:11px;color:var(--taupe);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:8px">';
-      h += '<span style="text-decoration:line-through;flex:1">' + f.title + '</span>';
-      h += '<span style="font-size:10px;white-space:nowrap">' + (f.archivedOn || '') + '</span></div>';
+      h += '<span style="text-decoration:line-through;flex:1">'+f.title+'</span>';
+      h += '<span style="font-size:10px;white-space:nowrap">'+( f.archivedOn||'')+'</span></div>';
     });
-    if (archive.length > 10) h += '<div style="font-size:10px;color:var(--taupe);padding-top:4px">' + (archive.length - 10) + ' more archived</div>';
-    h += '</div>';
+    if (archive.length>8) h += '<div style="font-size:10px;color:var(--taupe);padding-top:4px">'+(archive.length-8)+' more</div>';
+    h += '</div></div>';
   }
-
   container.innerHTML = h;
 }
 
 function toggleArchiveView() {
-  var v = el('archive-view');
-  var lbl = el('archive-toggle-lbl');
-  if (!v) return;
-  var isOpen = v.style.display !== 'none';
-  v.style.display = isOpen ? 'none' : 'block';
-  if (lbl) {
-    var archive = getArchive();
-    lbl.textContent = archive.length + ' archived task' + (archive.length > 1 ? 's' : '') + (isOpen ? ' ↓' : ' ↑');
-  }
+  var v=el('archive-view'); var lbl=el('archive-toggle-lbl');
+  if(!v) return;
+  var open = v.style.display!=='none';
+  v.style.display = open?'none':'block';
+  if(lbl) { var a=getArchive(); lbl.textContent=a.length+' archived '+(open?'↓':'↑'); }
 }
 
 function toggleFocus(id) {
   var items = getFocus();
-  var item = items.find(function(f) { return f.id === id; });
+  var item = items.find(function(f){ return f.id===id; });
   if (item) item.done = !item.done;
   saveFocus(items);
   renderFocus();
@@ -1145,963 +1176,666 @@ function toggleFocus(id) {
 
 function addFocus() {
   var inp = el('focus-input');
-  if (!inp || !inp.value.trim()) return;
+  if (!inp||!inp.value.trim()) return;
   var items = getFocus();
-  items.unshift({id:'f'+Date.now(), title:inp.value.trim(), sub:'', tag:'to', label:'Task', done:false});
+  items.unshift({id:'f'+Date.now(),title:inp.value.trim(),sub:'',tag:'to',label:'Task',done:false});
   saveFocus(items);
   renderFocus();
-  inp.value = '';
+  inp.value='';
 }
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'focus-input') addFocus();
+document.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='focus-input') addFocus();
 });
 
 async function suggestTasks() {
-  var btn = el('suggest-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Thinking...'; }
-  var now = new Date();
-  var ds = _ds(now);
-  var upcoming = BOOKINGS.filter(function(b) {
-    return b.co > ds && b.status !== 'cancelled' && b.status !== 'past' && b.status !== 'wc';
-  }).sort(function(a,b){return a.ci.localeCompare(b.ci);}).slice(0,3);
-  var existingTitles = getFocus().map(function(f) { return f.title; }).join('; ');
-  var cachedPL = null;
-  try { cachedPL = JSON.parse(localStorage.getItem('cam_pl') || 'null'); } catch(e) {}
-  var prompt = 'You are the AI assistant for Camichino STR, Bayonne NJ. Today is ' + now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) + '.' +
-    ' Upcoming guests: ' + (upcoming.length ? upcoming.map(function(b){return b.guest+' checking in '+b.ci;}).join(', ') : 'none soon') + '.' +
-    ' Occupancy 30d: ' + (cachedPL ? cachedPL.yourOcc30+'% vs '+cachedPL.mktOcc30+'% market' : 'unknown') + '.' +
-    ' Cancellation rate: 26%.' +
-    ' Existing tasks (skip duplicates): ' + (existingTitles || 'none') + '.' +
-    ' Suggest exactly 3 specific, actionable tasks for Camille today. Each must be: concrete (not vague), under 60 chars, tied to real data above.' +
-    ' Reply ONLY with a JSON array of 3 objects: [{title, sub, tag, label}]' +
-    ' tag options: tu (urgent), tg (growth), tf (finance), to (other)' +
-    ' label options: Urgent, Growth, Finance, Task' +
-    ' No other text.';
+  var btn=el('suggest-btn');
+  if(btn){btn.disabled=true;btn.textContent='Thinking...';}
+  var now=new Date(); var ds=_ds(now);
+  var upcoming=BOOKINGS.filter(function(b){return b.ci>ds&&(b.status==='confirmed'||b.status==='wc');}).sort(function(a,b){return a.ci.localeCompare(b.ci);}).slice(0,3);
+  var current=BOOKINGS.filter(function(b){return b.status==='current';});
+  var existingTitles=getFocus().map(function(f){return f.title;}).join('; ');
+  var cachedPL=null; try{cachedPL=JSON.parse(localStorage.getItem('cam_pl')||'null');}catch(e){}
+  var prompt='You are the AI assistant for Camichino STR, Bayonne NJ. Today is '+now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+'.'+
+    ' Current guest: '+(current.length?current[0].guest+' (checkout '+current[0].co+')':'none')+'.'+
+    ' Upcoming: '+(upcoming.length?upcoming.map(function(b){return b.guest+' '+b.ci;}).join(', '):'none soon')+'.'+
+    ' Occupancy 30d: '+(cachedPL?cachedPL.yourOcc30+'% vs '+cachedPL.mktOcc30+'% market':'unknown')+'. Cancellation rate: 26%.'+
+    ' Existing tasks (skip duplicates): '+(existingTitles||'none')+'.'+
+    ' Suggest exactly 3 specific actionable tasks for Camille today, under 55 chars each, tied to real data.'+
+    ' Return ONLY a JSON array: [{title,sub,tag,label}]. tag: tu/tg/tf/to. label: Urgent/Growth/Finance/Task.';
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
-    });
-    var d = await res.json();
-    var text = (d.content && d.content[0] && d.content[0].text) || '[]';
-    var clean = text.replace(/```json|```/g,'').trim();
-    var suggestions = JSON.parse(clean);
-    var items = getFocus();
-    suggestions.forEach(function(s) {
-      items.unshift({id:'ai'+Date.now()+Math.random(), title:s.title||'', sub:s.sub||'', tag:s.tag||'to', label:s.label||'Task', done:false});
-    });
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    var d=await res.json();
+    var text=(d.content&&d.content[0]&&d.content[0].text)||'[]';
+    var suggestions=JSON.parse(text.replace(/```json|```/g,'').trim());
+    var items=getFocus();
+    suggestions.forEach(function(s){items.unshift({id:'ai'+Date.now()+Math.random().toString(36).slice(2),title:s.title||'',sub:s.sub||'',tag:s.tag||'to',label:s.label||'Task',done:false});});
     saveFocus(items);
     renderFocus();
-  } catch(err) {}
-  if (btn) { btn.textContent = 'AI Suggest'; btn.disabled = false; }
+  } catch(err){}
+  if(btn){btn.textContent='AI Suggest';btn.disabled=false;}
 }
 
-// ── PLAN AHEAD ───────────────────────────────
-function renderPlan() {
-  var plans = [
-    {date:'Apr 18', title:'Javier Rodriguez arrives - 6 nights', sub:'$1,194 - Prepare for 6-night stay'},
-    {date:'May 1',  title:'Q2 2026 Property Tax due',             sub:'$2,292.48 - Block 214 Lot 23, Bayonne'},
-    {date:'May 10', title:'Chengyue Qian - 3 nights',            sub:'$690 - Back-to-back May bookings'},
-    {date:'Jun 16', title:'Q2 Federal estimated tax due',         sub:'Set aside before this date - Tax Reserve tab'},
-    {date:'Jul 18', title:'World Cup window opens',               sub:'5 nights locked at $1,500/night - $7,500'},
-  ];
-  var container = el('plan-list');
-  if (!container) return;
-  var html = '';
-  plans.forEach(function(p) {
-    html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:9px 11px;border-radius:7px;border:1px solid var(--border);background:var(--cream)">';
-    html += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--taupe);min-width:40px;padding-top:2px">' + p.date + '</div>';
-    html += '<div><div style="font-size:13px;color:var(--charcoal);font-weight:500">' + p.title + '</div>';
-    html += '<div style="font-size:11px;color:var(--taupe);margin-top:2px">' + p.sub + '</div></div></div>';
-  });
-  container.innerHTML = html;
+
+// ── CALENDAR ─────────────────────────────────────────────────
+var calY, calM, calView='month';
+var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function initCal() { var n=new Date(); calY=n.getFullYear(); calM=n.getMonth(); }
+
+function renderCal() {
+  updateCalCards();
+  if(calView==='month') renderMonth(); else renderAgenda();
 }
 
-// ── CALENDAR ─────────────────────────────────
-var calY, calM, calView = 'month';
-var MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-function initCal() { var n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); }
-
-function renderCal() { updateCalCards(); if (calView === 'month') renderMonth(); else renderAgenda(); }
-
-function setCalView(v, tabEl) {
-  calView = v;
-  document.querySelectorAll('.ct').forEach(function(b) { b.classList.remove('active'); });
-  tabEl.classList.add('active');
-  var mv = el('cal-month-view');
-  var av = el('cal-agenda-view');
-  if (mv) mv.style.display = v === 'month' ? '' : 'none';
-  if (av) av.style.display = v === 'agenda' ? '' : 'none';
+function setCalView(v,tabEl) {
+  calView=v;
+  document.querySelectorAll('.ct').forEach(function(b){b.classList.remove('active');});
+  if(tabEl) tabEl.classList.add('active');
+  var mv=el('cal-month-view'); var av=el('cal-agenda-view');
+  if(mv) mv.style.display=v==='month'?'':'none';
+  if(av) av.style.display=v==='agenda'?'':'none';
   renderCal();
 }
 
 function calMove(d) {
-  calM += d;
-  if (calM > 11) { calM = 0; calY++; }
-  if (calM < 0) { calM = 11; calY--; }
+  calM+=d;
+  if(calM>11){calM=0;calY++;} if(calM<0){calM=11;calY--;}
   renderCal();
 }
 
 function updateCalCards() {
-  var lbl = el('cal-lbl');
-  if (lbl) lbl.textContent = MN[calM] + ' ' + calY;
-  var prefix = calY + '-' + String(calM+1).padStart(2,'0');
-  var nextMM = calM === 11 ? 0 : calM+1;
-  var nextMY = calM === 11 ? calY+1 : calY;
-  var nextPrefix = nextMY + '-' + String(nextMM+1).padStart(2,'0');
-
-  var thisM = BOOKINGS.filter(function(b) { return b.ci.startsWith(prefix) && b.status !== 'cancelled' && b.status !== 'wc'; });
-  var nextM = BOOKINGS.filter(function(b) { return b.ci.startsWith(nextPrefix) && b.status !== 'cancelled' && b.status !== 'wc'; });
-
-  setText('cal-cm', thisM.length + ' bookings');
-  setText('cal-cm-rev', fmt$(thisM.reduce(function(s,b){return s+b.payout;},0)) + ' projected');
-  setText('cal-nm', nextM.length + ' bookings');
-  setText('cal-nm-rev', fmt$(nextM.reduce(function(s,b){return s+b.payout;},0)) + ' projected');
-
-  var nights = thisM.reduce(function(s,b){return s+b.nights;},0);
-  var dInM = new Date(calY, calM+1, 0).getDate();
-  setText('cal-nights', nights + ' of ' + dInM + 'd');
-  setText('cal-occ', Math.round((nights/dInM)*100) + '% occupancy');
-
-  var now = new Date();
-  var ds = _ds(now);
-  var upcoming = BOOKINGS.filter(function(b) { return b.co > ds && b.status !== 'cancelled' && b.status !== 'wc' && b.status !== 'past'; })
-    .sort(function(a,b){ return a.ci.localeCompare(b.ci); });
-  if (upcoming.length) {
-    var n = upcoming[0];
-    var diff = Math.round((_d(n.ci) - now) / 86400000);
-    setText('cal-next', diff <= 0 ? 'Today' : diff === 1 ? 'Tomorrow' : 'In ' + diff + 'd');
-    setText('cal-next-who', n.guest.split(' ')[0] + ' - ' + _d(n.ci).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
+  var lbl=el('cal-lbl'); if(lbl) lbl.textContent=MN[calM]+' '+calY;
+  var prefix=calY+'-'+String(calM+1).padStart(2,'0');
+  var nextMM=calM===11?0:calM+1; var nextMY=calM===11?calY+1:calY;
+  var nextPrefix=nextMY+'-'+String(nextMM+1).padStart(2,'0');
+  var thisM=BOOKINGS.filter(function(b){return b.ci.startsWith(prefix)&&b.status!=='cancelled'&&b.status!=='wc';});
+  var nextM=BOOKINGS.filter(function(b){return b.ci.startsWith(nextPrefix)&&b.status!=='cancelled'&&b.status!=='wc';});
+  setText('cal-cm',thisM.length+' bookings');
+  setText('cal-cm-rev',fmt$(thisM.reduce(function(s,b){return s+b.payout;},0))+' projected');
+  setText('cal-nm',nextM.length+' bookings');
+  setText('cal-nm-rev',fmt$(nextM.reduce(function(s,b){return s+b.payout;},0))+' projected');
+  var nights=thisM.reduce(function(s,b){return s+b.nights;},0);
+  var dIM=new Date(calY,calM+1,0).getDate();
+  setText('cal-nights',nights+' of '+dIM+'d');
+  setText('cal-occ',Math.round((nights/dIM)*100)+'% occupancy');
+  var now=new Date(); var ds=_ds(now);
+  var nextUp=BOOKINGS.filter(function(b){return b.co>ds&&b.status!=='cancelled'&&b.status!=='wc'&&b.status!=='past';}).sort(function(a,b){return a.ci.localeCompare(b.ci);});
+  if(nextUp.length){
+    var n=nextUp[0];
+    if(n.status==='current'){
+      var dLeft=Math.ceil((_d(n.co)-now)/86400000);
+      setText('cal-next','In house');
+      setText('cal-next-who',n.guest.split(' ')[0]+' - checkout in '+dLeft+'d');
+    } else {
+      var diff=Math.round((_d(n.ci)-now)/86400000);
+      setText('cal-next',diff<=0?'Today':diff===1?'Tomorrow':'In '+diff+'d');
+      setText('cal-next-who',n.guest.split(' ')[0]+' - '+_d(n.ci).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+    }
   }
-  var ts = el('cal-sync-ts');
-  if (ts) ts.textContent = 'Last updated: ' + new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  var ts=el('cal-sync-ts'); if(ts) ts.textContent='Last updated: '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 
 function booksOn(dt) {
-  return BOOKINGS.filter(function(b) {
-    if (b.status === 'cancelled') return false;
-    var ci = _d(b.ci), co = _d(b.co);
-    return dt >= ci && dt < co;
+  return BOOKINGS.filter(function(b){
+    if(b.status==='cancelled') return false;
+    var ci=_d(b.ci); var co=_d(b.co);
+    return dt>=ci && dt<co;
   });
 }
 
 function renderMonth() {
-  var grid = el('cal-grid');
-  if (!grid) return;
-  var html = '';
-  DOW.forEach(function(d) { html += '<div class="cdow">' + d + '</div>'; });
-  var first = new Date(calY, calM, 1).getDay();
-  var dIM = new Date(calY, calM+1, 0).getDate();
-  var prev = new Date(calY, calM, 0).getDate();
-  var today = new Date(); today.setHours(0,0,0,0);
-  for (var i = 0; i < first; i++) {
-    html += '<div class="cc om"><span class="cdn">' + (prev-first+i+1) + '</span></div>';
-  }
-  for (var d = 1; d <= dIM; d++) {
-    var dt = new Date(calY, calM, d);
-    var isToday = dt.getTime() === today.getTime();
-    var cells = '<span class="cdn">' + d + '</span>';
-    booksOn(dt).forEach(function(b) {
-      var cls = 'cb ' + (b.status === 'wc' ? 'wc' : b.status === 'past' ? 'past' : 'conf');
-      var dsStr = _ds(dt);
-      var isFirst = dsStr === b.ci;
-      var label = isFirst ? b.guest.split(' ')[0] : '...';
-      cells += '<div class="' + cls + '" onclick="openPanel(BOOKINGS.find(function(x){return x.code===\'' + b.code + '\';}))">' + label + '</div>';
+  var grid=el('cal-grid'); if(!grid) return;
+  var html='';
+  DOW.forEach(function(d){html+='<div class="cdow">'+d+'</div>';});
+  var first=new Date(calY,calM,1).getDay();
+  var dIM=new Date(calY,calM+1,0).getDate();
+  var prev=new Date(calY,calM,0).getDate();
+  var today=new Date(); today.setHours(0,0,0,0);
+  for(var i=0;i<first;i++){html+='<div class="cc om"><span class="cdn">'+(prev-first+i+1)+'</span></div>';}
+  for(var d=1;d<=dIM;d++){
+    var dt=new Date(calY,calM,d);
+    var isToday=dt.getTime()===today.getTime();
+    var cells='<span class="cdn">'+d+'</span>';
+    booksOn(dt).forEach(function(b){
+      var cls='cb '+(b.status==='wc'?'wc':b.status==='current'?'curr':b.status==='past'?'past':'conf');
+      var dsStr=_ds(dt); var isFirst=dsStr===b.ci;
+      var label=isFirst?b.guest.split(' ')[0]:'...';
+      cells+='<div class="'+cls+'" onclick="openPanel(\''+b.code+'\')">'+label+'</div>';
     });
-    // AC On / Cleaning markers
-    BOOKINGS.filter(function(b) { return b.ci === _ds(dt) && b.status !== 'past' && b.status !== 'cancelled'; }).forEach(function(b) {
-      cells += '<div class="cb ac">AC 3PM</div>';
+    BOOKINGS.filter(function(b){return b.ci===_ds(dt)&&b.status!=='past'&&b.status!=='cancelled';}).forEach(function(){
+      cells+='<div class="cb ac">AC 3PM</div>';
     });
-    BOOKINGS.filter(function(b) { return b.co === _ds(dt) && b.status !== 'past' && b.status !== 'cancelled'; }).forEach(function(b) {
-      cells += '<div class="cb cln">Clean 11:30</div>';
+    BOOKINGS.filter(function(b){return b.co===_ds(dt)&&b.status!=='past'&&b.status!=='cancelled';}).forEach(function(){
+      cells+='<div class="cb cln">Clean 11:30</div>';
     });
-    html += '<div class="cc' + (isToday ? ' td' : '') + '">' + cells + '</div>';
+    html+='<div class="cc'+(isToday?' td':'')+'">' +cells+'</div>';
   }
-  var filled = first + dIM;
-  var extra = filled % 7 === 0 ? 0 : 7 - (filled % 7);
-  for (var j = 1; j <= extra; j++) {
-    html += '<div class="cc om"><span class="cdn">' + j + '</span></div>';
-  }
-  grid.innerHTML = html;
+  var filled=first+dIM; var extra=filled%7===0?0:7-(filled%7);
+  for(var j=1;j<=extra;j++){html+='<div class="cc om"><span class="cdn">'+j+'</span></div>';}
+  grid.innerHTML=html;
 }
 
 function renderAgenda() {
-  var container = el('cal-agenda-view');
-  if (!container) return;
-  var now = new Date();
-  var future = BOOKINGS.filter(function(b) { return b.co >= _ds(now) && b.status !== 'cancelled'; })
-    .sort(function(a,b) { return a.ci.localeCompare(b.ci); });
-  if (!future.length) { container.innerHTML = '<p style="color:var(--taupe);padding:20px">No upcoming reservations</p>'; return; }
-  var html = '';
-  future.forEach(function(b) {
-    var ciDate = _d(b.ci);
-    html += '<div class="ag-item">';
-    html += '<div class="ag-date"><div class="ag-d">' + ciDate.getDate() + '</div><div class="ag-m">' + MN[ciDate.getMonth()].slice(0,3).toUpperCase() + '</div></div>';
-    html += '<div><div class="ag-title">' + b.guest + '</div>';
-    html += '<div class="ag-sub">' + _d(b.ci).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' - ' + _d(b.co).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' - ' + b.nights + ' nights - ' + fmt$(b.payout) + '</div></div></div>';
+  var container=el('cal-agenda-view'); if(!container) return;
+  var now=new Date();
+  var future=BOOKINGS.filter(function(b){return b.co>=_ds(now)&&b.status!=='cancelled';}).sort(function(a,b){return a.ci.localeCompare(b.ci);});
+  if(!future.length){container.innerHTML='<p style="color:var(--taupe);padding:20px">No upcoming reservations</p>';return;}
+  var html='';
+  future.forEach(function(b){
+    var ciDate=_d(b.ci);
+    var statusLabel=b.status==='current'?'IN HOUSE':b.status==='wc'?'WORLD CUP':b.status.toUpperCase();
+    html+='<div class="ag-item">';
+    html+='<div class="ag-date"><div class="ag-d">'+ciDate.getDate()+'</div><div class="ag-m">'+MN[ciDate.getMonth()].slice(0,3).toUpperCase()+'</div></div>';
+    html+='<div style="flex:1"><div class="ag-title">'+b.guest+'<span style="margin-left:8px;font-size:9px;background:var(--ox);color:var(--cream);padding:2px 6px;border-radius:3px;vertical-align:middle">'+statusLabel+'</span></div>';
+    html+='<div class="ag-sub">'+_d(b.ci).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+_d(b.co).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+b.nights+' nights - '+fmt$(b.payout)+'</div></div></div>';
   });
-  container.innerHTML = html;
+  container.innerHTML=html;
 }
 
-// ── PANEL (booking detail) ───────────────────
-function openPanel(b) {
-  if (!b) return;
-  var p = el('panel');
-  var pc = el('panel-content');
-  if (!p || !pc) return;
-  var status = b.status === 'wc' ? 'World Cup' : b.status.charAt(0).toUpperCase() + b.status.slice(1);
-  var html = '<h3 style="font-family:Bodoni Moda,serif;font-size:22px;font-weight:300;color:var(--brown);margin-bottom:16px">' + b.guest + '</h3>';
-  html += '<div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--charcoal)">';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Status</span><br>' + status + '</div>';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Check-in</span><br>' + _d(b.ci).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'}) + '</div>';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Checkout</span><br>' + _d(b.co).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'}) + '</div>';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Nights</span><br>' + b.nights + '</div>';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Payout</span><br>' + fmt$2(b.payout) + '</div>';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Guests</span><br>' + (b.guests || '-') + '</div>';
-  html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Confirmation</span><br>' + b.code + '</div>';
-  if (b.cancelledBy) html += '<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Cancelled By</span><br>' + b.cancelledBy + '</div>';
-  html += '</div>';
-  pc.innerHTML = html;
+function openPanel(code) {
+  var b=BOOKINGS.find(function(x){return x.code===code;});
+  if(!b) return;
+  var p=el('panel'); var pc=el('panel-content');
+  if(!p||!pc) return;
+  var statusLabel=b.status==='current'?'In House':b.status==='wc'?'World Cup':b.status.charAt(0).toUpperCase()+b.status.slice(1);
+  var html='<h3 style="font-family:Bodoni Moda,serif;font-size:22px;font-weight:300;color:var(--brown);margin-bottom:16px">'+b.guest+'</h3>';
+  html+='<div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--charcoal)">';
+  var rows=[['Status',statusLabel],['Check-in',_d(b.ci).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})],['Checkout',_d(b.co).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})],['Nights',b.nights],['Payout',fmt$2(b.payout)],['Guests',b.guests||'-'],['Confirmation',b.code]];
+  if(b.cancelledBy) rows.push(['Cancelled by',b.cancelledBy]);
+  rows.forEach(function(row){
+    html+='<div><span style="color:var(--taupe);font-size:10px;text-transform:uppercase;letter-spacing:.1em">'+row[0]+'</span><br>'+row[1]+'</div>';
+  });
+  html+='</div>';
+  if(b.status==='confirmed'||b.status==='current'){
+    html+='<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)"><div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:10px">Operational Reminders</div>';
+    html+='<div style="font-size:12px;background:rgba(73,10,10,.08);padding:8px 12px;border-radius:6px;margin-bottom:6px">AC On - 3:00 PM day of check-in</div>';
+    html+='<div style="font-size:12px;background:rgba(90,110,90,.08);padding:8px 12px;border-radius:6px">Cleaning 11:30 AM on checkout day</div></div>';
+  }
+  pc.innerHTML=html;
   p.classList.add('open');
-  var pov = el('pov');
-  if (pov) pov.style.display = 'block';
+  var pov=el('pov'); if(pov) pov.style.display='block';
 }
 
 function closePanel() {
-  var p = el('panel');
-  var pov = el('pov');
-  if (p) p.classList.remove('open');
-  if (pov) pov.style.display = 'none';
+  var p=el('panel'); var pov=el('pov');
+  if(p) p.classList.remove('open');
+  if(pov) pov.style.display='none';
 }
 
-// ── PERFORMANCE ──────────────────────────────
+
+// ── PERFORMANCE ───────────────────────────────────────────────
 function calcPerf() {
-  var confirmed = BOOKINGS.filter(function(b) { return b.status !== 'cancelled' && b.guest !== 'Camille (Internal)'; });
-  var cancelled = BOOKINGS.filter(function(b) { return b.status === 'cancelled'; });
-  var nights = confirmed.reduce(function(s,b) { return s + b.nights; }, 0);
-  var total = confirmed.length + cancelled.length;
-  var cancelRate = total ? Math.round((cancelled.length/total)*100) : 0;
-  var lostRev = cancelled.reduce(function(s,b) { return s + b.payout; }, 0);
-
-  setText('perf-bk', confirmed.length);
-  setText('perf-bk-sub', cancelled.length + ' cancellations');
-  setText('perf-nights', nights);
-  if (confirmed.length) setText('perf-los', (nights/confirmed.length).toFixed(1) + 'n');
-  setText('perf-comp', (100-cancelRate) + '%');
-  setText('perf-canc', cancelRate + '%');
-  setText('perf-lost', fmt$(lostRev));
-
-  var compBar = el('perf-comp-bar');
-  var cancBar = el('perf-canc-bar');
-  var lostBar = el('perf-lost-bar');
-  if (compBar) compBar.style.width = (100-cancelRate) + '%';
-  if (cancBar) cancBar.style.width = cancelRate + '%';
-  if (lostBar) lostBar.style.width = Math.min(100, (lostRev/10000)*100) + '%';
+  var confirmed=BOOKINGS.filter(function(b){return b.status!=='cancelled'&&b.guest!=='Camille (Internal)';});
+  var cancelled=BOOKINGS.filter(function(b){return b.status==='cancelled';});
+  var nights=confirmed.reduce(function(s,b){return s+b.nights;},0);
+  var total=confirmed.length+cancelled.length;
+  var cancelRate=total?Math.round((cancelled.length/total)*100):0;
+  setText('perf-bk',confirmed.length);
+  setText('perf-bk-sub',cancelled.length+' cancellations');
+  setText('perf-nights',nights);
+  if(confirmed.length) setText('perf-los',(nights/confirmed.length).toFixed(1)+'n');
+  setText('perf-comp',(100-cancelRate)+'%');
+  setText('perf-canc',cancelRate+'%');
+  var lostRev=cancelled.reduce(function(s,b){return s+b.payout;},0);
+  setText('perf-lost',fmt$(lostRev));
+  var compBar=el('perf-comp-bar'); var cancBar=el('perf-canc-bar'); var lostBar=el('perf-lost-bar');
+  if(compBar) compBar.style.width=(100-cancelRate)+'%';
+  if(cancBar) cancBar.style.width=cancelRate+'%';
+  if(lostBar) lostBar.style.width=Math.min(100,(lostRev/10000)*100)+'%';
+  // Avg booking window
+  var withDates=confirmed.filter(function(b){return b.bookedDate&&b.ci;});
+  setText('perf-abw',withDates.length?'—':'46 days');
+  setText('perf-abw-sub','Days from booking to check-in');
 }
 
-// ── CHARTS ───────────────────────────────────
-var chartsInit = false;
+var chartsInit=false;
 function initCharts() {
-  if (chartsInit || !window.Chart) return;
-  chartsInit = true;
-  var byMonth = {};
-  BOOKINGS.filter(function(b) { return b.status !== 'cancelled'; }).forEach(function(b) {
-    var m = _d(b.ci).getMonth();
-    byMonth[m] = (byMonth[m] || 0) + b.payout;
+  if(chartsInit||!window.Chart) return;
+  chartsInit=true;
+  var byMonth={};
+  BOOKINGS.filter(function(b){return b.status!=='cancelled';}).forEach(function(b){
+    var m=_d(b.ci).getMonth(); byMonth[m]=(byMonth[m]||0)+b.payout;
   });
-  var labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var revData = labels.map(function(_,i) { return byMonth[i] || 0; });
-  var revCanvas = el('chartRev');
-  if (revCanvas) {
-    new Chart(revCanvas, {
-      type: 'bar',
-      data: { labels: labels, datasets: [{label:'Revenue', data: revData, backgroundColor:'rgba(73,10,10,0.7)', borderRadius:4}] },
-      options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:function(v){return '$'+v.toLocaleString();}},grid:{color:'rgba(0,0,0,0.05)'}}} }
-    });
+  var labels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var revData=labels.map(function(_,i){return byMonth[i]||0;});
+  var canvas=el('chartRev');
+  if(canvas){
+    new Chart(canvas,{type:'bar',data:{labels:labels,datasets:[{label:'Revenue',data:revData,backgroundColor:'rgba(73,10,10,0.7)',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+v.toLocaleString();}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
   }
 }
 
-// ── FINANCES ─────────────────────────────────
-var BAL_KEY = 'cam_bal_v1';
-function loadBal(ovOnly) {
-  try {
-    var d = JSON.parse(localStorage.getItem(BAL_KEY) || '{}');
-    if (!ovOnly) {
-      var fields = ['chk','sav','jnt','res'];
-      var ids = ['bal-chk','bal-sav','bal-jnt','bal-res'];
-      fields.forEach(function(f,i) { var e = el(ids[i]); if (e && d[f]) e.value = d[f]; });
-      updateReserve();
-    }
-    var resVal = parseFloat(d.res || 0);
-    var resTarget = parseFloat(d.resTarget || 17500);
-    setText('ov-reserve', fmt$(resVal));
-    var bar = el('ov-res-bar');
-    if (bar) bar.style.width = Math.min(100, (resVal/resTarget)*100) + '%';
-  } catch(e) {}
-}
-
-function saveBal() {
-  try {
-    var d = {};
-    ['chk','sav','jnt','res'].forEach(function(f) {
-      var e = el('bal-' + f);
-      if (e) d[f] = e.value;
-    });
-    var rt = el('res-target');
-    if (rt) d.resTarget = rt.value;
-    localStorage.setItem(BAL_KEY, JSON.stringify(d));
-    updateReserve();
-    loadBal(true);
-  } catch(e) {}
-}
-
-function updateReserve() {
-  var resEl = el('bal-res');
-  var targetEl = el('res-target');
-  if (!resEl) return;
-  var val = parseFloat(resEl.value || 0);
-  var target = parseFloat((targetEl && targetEl.value) || 17500);
-  var pct = Math.min(100, (val/target)*100);
-  var bar = el('res-bar');
-  var pctEl = el('res-pct');
-  var hint = el('res-hint');
-  var badge = el('res-badge');
-  var wrap = el('res-bar-wrap');
-  if (bar) bar.style.width = pct + '%';
-  if (pctEl) pctEl.textContent = Math.round(pct) + '%';
-  if (wrap) wrap.style.display = val > 0 ? '' : 'none';
-  if (hint) hint.style.display = val > 0 ? 'none' : '';
-  if (badge) {
-    badge.style.display = val > 0 ? '' : 'none';
-    badge.textContent = pct >= 100 ? 'Target Met' : Math.round(pct) + '% funded';
-    badge.style.background = pct >= 100 ? '#e8f0e8' : '#fdf8f0';
-    badge.style.color = pct >= 100 ? 'var(--green)' : 'var(--warn)';
-  }
-}
-
-// Business expenses
-// ── EXPENSE ALLOCATION ────────────────────────
-// Property: 118 W 21st St, Bayonne NJ (2-family)
-// Rental unit (2F Airbnb): 998 SF
-// Personal residence (owner): 1,334 SF
-// Total: 2,332 SF  |  Rental share: 998/2332 = 42.8%
-// Direct Airbnb expenses (supplies, ads, cleaning): 100%
-// Shared expenses (mortgage, utilities, insurance, tax): 42.8%
-var BIZ_KEY = 'cam_biz_v1';
-function getBizExp() { try { return JSON.parse(localStorage.getItem(BIZ_KEY) || '[]'); } catch(e) { return []; } }
-function saveBizExp(items) { localStorage.setItem(BIZ_KEY, JSON.stringify(items)); }
-
-
-
-function renderBizExp() {
-  var items = getBizExp();
-  var total = items.reduce(function(s,e) { return s + (e.amount||0); }, 0);
-  // Allocation: 42.8% for shared expenses, 100% for direct Airbnb expenses
-  var DIRECT = ['Supplies & Amenities','Marketing','Cleaning & Turnover','Platform Fees','Other'];
-  function allocPct(cat) { return DIRECT.indexOf(cat) >= 0 ? 1.0 : 0.428; }
-  var ded = items.reduce(function(s,e) { return s + (e.amount||0) * allocPct(e.category||''); }, 0);
-  // Actualized revenue only (completed stays that have paid out)
-  var pastPayouts = BOOKINGS.filter(function(b) { return b.status === 'past' && b.guest !== 'Camille (Internal)'; })
-    .reduce(function(s,b) { return s + b.payout; }, 0);
-  var ytd = Math.max(pastPayouts, 2897); // 2897 = confirmed actualized YTD
-  var noi = ytd - total;
-
-  setText('biz-total', fmt$2(total));
-  setText('biz-count', items.length + ' entries');
-  setText('biz-ded', fmt$2(ded));
-  setText('biz-noi', fmt$(noi));
-  setText('biz-noi-sub', 'Actualized $' + ytd.toLocaleString() + ' - expenses');
-
-  // Category breakdown
-  var byCat = {};
-  items.forEach(function(e) {
-    byCat[e.category] = (byCat[e.category] || 0) + (e.amount||0);
-  });
-  var topCat = Object.keys(byCat).sort(function(a,b) { return byCat[b]-byCat[a]; })[0];
-  setText('biz-top', topCat || '-');
-  setText('biz-top-amt', topCat ? fmt$2(byCat[topCat]) : '');
-
-  var tbody = el('biz-tbody');
-  if (!tbody) return;
-  if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--taupe);padding:28px;font-size:12px">No expenses yet.</td></tr>';
-    return;
-  }
-  var rows = '';
-  items.forEach(function(e, i) {
-    rows += '<tr>';
-    rows += '<td>' + (e.date||'-') + '</td>';
-    rows += '<td>' + (e.description||'-') + '</td>';
-    rows += '<td>' + (e.category||'-') + '</td>';
-    rows += '<td>' + fmt$2(e.amount||0) + '</td>';
-    rows += '<td style="color:var(--green)">' + fmt$2((e.amount||0) * allocPct(e.category||'')) + '</td>';
-    rows += '<td><button class="btn btn-d" onclick="delBizExp(' + i + ')">Delete</button></td>';
-    rows += '</tr>';
-  });
-  tbody.innerHTML = rows;
-}
-
-
-
-
-
-function addBizExp() {
-  var date = el('biz-date') ? el('biz-date').value : '';
-  var desc = el('biz-desc') ? el('biz-desc').value.trim() : '';
-  var cat = el('biz-cat') ? el('biz-cat').value : '';
-  var amt = parseFloat(el('biz-amt') ? el('biz-amt').value : 0);
-  if (!desc || isNaN(amt)) { alert('Please enter description and amount'); return; }
-  var items = getBizExp();
-  items.unshift({date:date, description:desc, category:cat, amount:amt});
-  saveBizExp(items);
-  renderBizExp();
-  if (el('biz-desc')) el('biz-desc').value = '';
-  if (el('biz-amt')) el('biz-amt').value = '';
-}
-
-function delBizExp(i) {
-  var items = getBizExp();
-  items.splice(i, 1);
-  saveBizExp(items);
-  renderBizExp();
-}
-
-// Home bills
-var BILLS_KEY = 'cam_bills_v1';
-function getBills() { try { return JSON.parse(localStorage.getItem(BILLS_KEY) || '[]'); } catch(e) { return []; } }
-function saveBills(items) { localStorage.setItem(BILLS_KEY, JSON.stringify(items)); }
-
-function renderBills() {
-  var items = getBills();
-  var total = items.reduce(function(s,b) { return s + (b.amount||0); }, 0);
-  // Home bills are shared expenses — 42.8% rental allocation (998 SF / 2,332 SF)
-  var ded = total * 0.428;
-  var ytdEl = document.querySelector('[data-bills-ytd]');
-  if (!ytdEl) {
-    // Use fixed text approach
-    var allBillTotals = document.querySelectorAll('.bills-total');
-    allBillTotals.forEach(function(e) { e.textContent = 'YTD Total: ' + fmt$2(total) + ' - Deductible (50%): ' + fmt$2(ded); });
-  }
-  var tbody = document.querySelector('#bills-table tbody') || el('bills-tbody');
-  if (!tbody) return;
-  if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--taupe);padding:20px;font-size:12px">No bills logged yet.</td></tr>';
-    return;
-  }
-  var rows = '';
-  items.forEach(function(b, i) {
-    rows += '<tr><td>' + (b.date||'-') + '</td><td>' + b.description + '</td><td>' + b.category + '</td><td>' + fmt$2(b.amount) + '</td><td style="color:var(--green)">' + fmt$2(b.amount*0.428) + '</td><td><button class="btn btn-d" onclick="delBill(' + i + ')">Del</button></td></tr>';
-  });
-  tbody.innerHTML = rows;
-}
-
-function addBill() {
-  var date = el('bill-date') ? el('bill-date').value : '';
-  var desc = el('bill-desc') ? el('bill-desc').value.trim() : '';
-  var cat = el('bill-cat') ? el('bill-cat').value : '';
-  var amt = parseFloat(el('bill-amt') ? el('bill-amt').value : 0);
-  if (!desc || isNaN(amt)) { alert('Please enter description and amount'); return; }
-  var items = getBills();
-  items.unshift({date:date, description:desc, category:cat, amount:amt});
-  saveBills(items);
-  renderBills();
-  if (el('bill-desc')) el('bill-desc').value = '';
-  if (el('bill-amt')) el('bill-amt').value = '';
-}
-function delBill(i) { var items = getBills(); items.splice(i,1); saveBills(items); renderBills(); }
-
-// Tax calculator
-function calcTax() {
-  var fed = parseFloat((el('fed-rate') || {value:22}).value) || 22;
-  var nj = parseFloat((el('nj-rate') || {value:6.37}).value) || 6.37;
-  var se = parseFloat((el('se-rate') || {value:0}).value) || 0;
-  var inc = parseFloat((el('gross-income') || {value:2897}).value) || 2897;
-  var rate = fed + nj + se;
-  var owed = inc * (rate/100);
-  var net = inc - owed;
-  var qtr = owed / 4;
-  setText('tax-rate-display', rate.toFixed(1) + '%');
-  setText('tax-gross-display', fmt$2(inc));
-  setText('tax-owed-display', fmt$2(owed));
-  setText('tax-net-display', fmt$2(net));
-  setText('q1-est', fmt$(qtr));
-  setText('q2-est', fmt$(qtr));
-  setText('q3-est', fmt$(qtr));
-  setText('q4-est', fmt$(qtr));
-}
-
-// AI Expense Import
-function handleDrop(event) {
-  event.preventDefault();
-  var dz = el('dropzone');
-  if (dz) dz.classList.remove('over');
-  var file = event.dataTransfer && event.dataTransfer.files[0];
-  if (file) processFile(file);
-}
-function handleFile(event) {
-  var file = event.target && event.target.files[0];
-  if (file) processFile(file);
-}
-
-function processFile(file) {
-  var prog = el('parse-progress');
-  var msg = el('parse-msg');
-  var status = el('dz-status');
-  if (prog) prog.style.display = 'block';
-  if (msg) msg.textContent = 'Reading ' + file.name + '...';
-
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var content = e.target.result;
-    var isImage = file.type.indexOf('image') !== -1;
-    parseWithAI(content, isImage, file.type);
-  };
-  if (file.type.indexOf('image') !== -1 || file.type === 'application/pdf') {
-    reader.readAsDataURL(file);
-  } else {
-    reader.readAsText(file);
-  }
-}
-
-function parseWithAI(content, isImage, fileType) {
-  var prog = el('parse-progress');
-  var msg = el('parse-msg');
-  if (msg) msg.textContent = 'Analyzing with Claude...';
-
-  var messages;
-  if (isImage) {
-    var b64 = content.split(',')[1];
-    var mediaType = fileType || 'image/jpeg';
-    messages = [{role:'user', content:[
-      {type:'image', source:{type:'base64', media_type:mediaType, data:b64}},
-      {type:'text', text:'Extract all expenses from this receipt/statement. Return ONLY a JSON array with objects containing: date (YYYY-MM-DD), description, category (one of: Platform Fees, Cleaning & Turnover, Utilities, Insurance, Maintenance & Repairs, Furniture & Furnishings, Marketing, Professional Services, Supplies & Amenities, Mortgage Interest, Property Tax, Other), amount (number). No other text, just the JSON array.'}
-    ]}];
-  } else {
-    messages = [{role:'user', content:'Extract all expenses from this text. Return ONLY a JSON array with objects: {date, description, category, amount}. Categories: Platform Fees, Cleaning & Turnover, Utilities, Insurance, Maintenance & Repairs, Furniture & Furnishings, Marketing, Professional Services, Supplies & Amenities, Mortgage Interest, Property Tax, Other. No other text.\n\n' + content.slice(0, 8000)}];
-  }
-
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json', 'x-api-key':ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-    body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:messages})
-  }).then(function(r) { return r.json(); }).then(function(data) {
-    var text = (data.content && data.content[0] && data.content[0].text) || '[]';
-    var clean = text.replace(/```json|```/g, '').trim();
-    try {
-      var parsed = JSON.parse(clean);
-      showImportPreview(parsed);
-      if (prog) prog.style.display = 'none';
-    } catch(e) {
-      if (prog) prog.style.display = 'none';
-      var dz = el('dropzone');
-      if (dz) dz.innerHTML = '<div class="dz-ico">X</div><div class="dz-t">Could not parse file</div><div class="dz-s">Try a CSV or plain text file</div>';
-    }
-  }).catch(function() {
-    if (prog) prog.style.display = 'none';
-  });
-}
-
-function showImportPreview(items) {
-  var preview = el('parse-preview');
-  var count = el('parse-count');
-  var tbl = el('parse-table');
-  if (!preview) return;
-  if (count) count.textContent = items.length + ' expenses found';
-  window._importedExpenses = items;
-  if (tbl) {
-    var rows = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:rgba(255,255,255,.06)"><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Date</th><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Description</th><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Category</th><th style="padding:7px 10px;text-align:right;color:var(--taupe);font-size:9px;text-transform:uppercase">Amount</th></tr></thead><tbody>';
-    var existingExp = getBizExp();
-    items.forEach(function(e) {
-      var amt = parseFloat(e.amount || 0);
-      var desc = (e.description || '').toLowerCase().trim();
-      var date = e.date || '';
-      var isDupe = existingExp.some(function(x) {
-        return (x.description || '').toLowerCase().trim() === desc &&
-               Math.abs((x.amount || 0) - amt) < 0.02 &&
-               (x.date || '') === date;
-      });
-      var dupeFlag = isDupe ? '<span style="background:rgba(224,112,112,.2);color:#e07070;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px;font-family:Tenor Sans,sans-serif;letter-spacing:.06em">DUPE</span>' : '';
-      var rowStyle = isDupe ? 'opacity:0.5;' : '';
-      rows += '<tr style="border-top:1px solid rgba(255,255,255,.08);' + rowStyle + '"><td style="padding:7px 10px">' + (e.date||'-') + '</td><td style="padding:7px 10px">' + (e.description||'-') + dupeFlag + '</td><td style="padding:7px 10px;font-size:10px">' + (e.category||'-') + '</td><td style="padding:7px 10px;text-align:right">' + fmt$2(e.amount||0) + '</td></tr>';
-    });
-    rows += '</tbody></table>';
-    tbl.innerHTML = rows;
-  }
-  preview.style.display = 'block';
-}
-
-function importExpenses() {
-  var items = window._importedExpenses || [];
-  var existing = getBizExp();
-  var added = 0;
-  var skipped = 0;
-  items.forEach(function(e) {
-    var amt = parseFloat(e.amount || 0);
-    var desc = (e.description || '').toLowerCase().trim();
-    var date = e.date || '';
-    // Dedup check: same description (case-insensitive) + same amount + same date
-    var isDupe = existing.some(function(x) {
-      return (x.description || '').toLowerCase().trim() === desc &&
-             Math.abs((x.amount || 0) - amt) < 0.02 &&
-             (x.date || '') === date;
-    });
-    if (!isDupe) {
-      existing.unshift({date: date, description: e.description||'', category: e.category||'Other', amount: amt});
-      added++;
-    } else {
-      skipped++;
-    }
-  });
-  saveBizExp(existing);
-  clearImport();
-  renderBizExp();
-  // Show result toast
-  var st = el('sync-st');
-  if (skipped > 0 && st) {
-    st.textContent = added + ' imported, ' + skipped + ' duplicate' + (skipped > 1 ? 's' : '') + ' skipped';
-    setTimeout(function() { st.textContent = ''; }, 4000);
-  }
-}
-
-function clearImport() {
-  window._importedExpenses = [];
-  var preview = el('parse-preview');
-  var prog = el('parse-progress');
-  var fi = el('file-input');
-  if (preview) preview.style.display = 'none';
-  if (prog) prog.style.display = 'none';
-  if (fi) fi.value = '';
-  var dz = el('dropzone');
-  if (dz) dz.innerHTML = '<div class="dz-ico">Document</div><div class="dz-t">Drop file here or click to browse</div><div class="dz-s">CSV - PDF - PNG - JPG - XLSX - any bank statement or receipt</div>';
-}
-
-// ── REVIEWS ──────────────────────────────────
+// ── REVIEWS ───────────────────────────────────────────────────
 var REVIEWS = [
-  {guest:'Alandra Ortiz-Torres', loc:'Burlington, NJ',  date:'Mar 6-8, 2026',   nights:2, stars:5, body:'I absolutely enjoyed my stay. Hope to stay again!', tags:['Spotless furniture & linens','Free of clutter','Squeaky-clean bathroom','Pristine kitchen']},
-  {guest:'Arinze Agu',           loc:'New York, NY',    date:'Feb 13-15, 2026', nights:2, stars:5, body:'We had a beautiful experience here. Great location, affable host and clean spaces.', tags:['Free of clutter','Squeaky-clean bathroom','Looked like the photos']},
-  {guest:'Elizabeth Adeoye',     loc:'',                date:'Feb 21-23, 2026', nights:2, stars:1, body:'', tags:[], hostResponse:'Response submitted.'},
-  {guest:'Sebastien Dagist',     loc:'',                date:'Feb 1-3, 2026',   nights:2, stars:5, body:'Wonderful stay at Camichino.', tags:[]},
-  {guest:'Kyra Parks',           loc:'',                date:'Jan 30-Feb 1, 2026', nights:2, stars:5, body:'Great experience, highly recommend.', tags:[]},
-  {guest:'Dezmon Criss-Barnard', loc:'New York, NY',    date:'Mar 10-13, 2026', nights:3, stars:5, body:'Amazing place, exactly as described. Will definitely be back!', tags:['Free of clutter','Pristine kitchen']},
-  {guest:'Nida Mitha',           loc:'New Jersey',      date:'Mar 13-15, 2026', nights:2, stars:4, body:'We loved the place a lot!! Great host, very communicative.', tags:[]},
-  {guest:'Tevfik Vatansever',    loc:'New York, NY',    date:'Mar 15-22, 2026', nights:7, stars:5, body:'The word hygge comes to mind - a cozy, welcoming retreat that felt like home.', tags:['Spotless furniture & linens','Free of clutter']},
-  {guest:'Kendal Brame',         loc:'',                date:'Mar 25-28, 2026', nights:3, stars:5, body:'Beautiful space, incredible design. Felt like a boutique hotel.', tags:['Looked like the photos','Pristine kitchen']},
+  {guest:'Alandra Ortiz-Torres',loc:'Burlington, NJ', date:'Mar 6-8',  nights:2, stars:5, body:'I absolutely enjoyed my stay. Hope to stay again!', tags:['Spotless furniture & linens','Free of clutter','Pristine kitchen']},
+  {guest:'Arinze Agu',          loc:'New York, NY',   date:'Feb 13-15',nights:2, stars:5, body:'Beautiful experience. Great location, affable host and clean spaces.', tags:['Free of clutter','Squeaky-clean bathroom']},
+  {guest:'Elizabeth Adeoye',    loc:'',               date:'Feb 21-23',nights:2, stars:1, body:'', tags:[], hostResponse:'Response submitted.'},
+  {guest:'Sebastien Dagist',    loc:'',               date:'Feb 1-3',  nights:2, stars:5, body:'Wonderful stay at Camichino.', tags:[]},
+  {guest:'Kyra Parks',          loc:'',               date:'Jan 30',   nights:2, stars:5, body:'Great experience, highly recommend.', tags:[]},
+  {guest:'Dezmon Criss-Barnard',loc:'New York, NY',   date:'Mar 10-13',nights:3, stars:5, body:'Amazing place, exactly as described. Will definitely be back!', tags:['Free of clutter','Pristine kitchen']},
+  {guest:'Nida Mitha',          loc:'New Jersey',     date:'Mar 13-15',nights:2, stars:4, body:'We loved the place a lot!! Great host, very communicative.', tags:[]},
+  {guest:'Tevfik Vatansever',   loc:'New York, NY',   date:'Mar 15-22',nights:7, stars:5, body:'The word hygge comes to mind - a cozy, welcoming retreat that felt like home.', tags:['Spotless furniture & linens','Free of clutter']},
+  {guest:'Kendal Brame',        loc:'',               date:'Mar 25-28',nights:3, stars:5, body:'Beautiful space, incredible design. Felt like a boutique hotel.', tags:['Looked like the photos','Pristine kitchen']},
 ];
 
 function renderReviews() {
-  var feed = el('reviews-feed');
-  if (!feed) return;
-  var totalStars = REVIEWS.reduce(function(s,r) { return s + r.stars; }, 0);
-  var avg = (totalStars / REVIEWS.length).toFixed(2);
-  var fiveStar = REVIEWS.filter(function(r) { return r.stars === 5; }).length;
-  setText('rv-score', avg);
-  setText('rv-count', REVIEWS.length + ' reviews - 2026');
-  setText('rv-5star', Math.round((fiveStar/REVIEWS.length)*100) + '%');
-  setText('rv-5star-s', fiveStar + ' of ' + REVIEWS.length + ' reviews');
-
-  var html = '';
-  REVIEWS.forEach(function(r) {
-    var stars = '★'.repeat(r.stars) + '☆'.repeat(5-r.stars);
-    var starColor = r.stars >= 4 ? 'var(--green)' : r.stars === 1 ? 'var(--ox)' : 'var(--taupe)';
-    var borderColor = r.stars >= 4 ? 'var(--green)' : r.stars === 1 ? 'var(--ox)' : 'var(--taupe)';
-    var badgeCls = r.stars >= 4 ? 'bg' : r.stars === 1 ? 'br' : 'bw';
-    html += '<div class="rv" style="border-left:3px solid ' + borderColor + '">';
-    html += '<div class="rv-h"><div><div class="rv-name">' + r.guest + '</div><div class="rv-date">' + (r.loc ? r.loc + ' - ' : '') + r.date + ' - ' + r.nights + ' nights</div></div>';
-    html += '<div style="text-align:right"><div class="rv-stars" style="color:' + starColor + '">' + stars + '</div><div class="badge ' + badgeCls + '" style="margin-top:4px">' + r.stars + ' star' + (r.stars!==1?'s':'') + '</div></div></div>';
-    if (r.body) html += '<div class="rv-body">' + r.body + '</div>';
-    if (r.tags && r.tags.length) {
-      html += '<div class="rv-tags">';
-      r.tags.forEach(function(t) { html += '<div class="rv-tag">' + t + '</div>'; });
-      html += '</div>';
-    }
-    html += '</div>';
+  var feed=el('reviews-feed'); if(!feed) return;
+  var totalStars=REVIEWS.reduce(function(s,r){return s+r.stars;},0);
+  var avg=(totalStars/REVIEWS.length).toFixed(2);
+  var fiveStar=REVIEWS.filter(function(r){return r.stars===5;}).length;
+  setText('rv-score',avg);
+  setText('rv-count',REVIEWS.length+' reviews - 2026');
+  setText('rv-5star',Math.round((fiveStar/REVIEWS.length)*100)+'%');
+  setText('rv-5star-s',fiveStar+' of '+REVIEWS.length+' reviews');
+  var html='';
+  REVIEWS.forEach(function(r){
+    var stars='★'.repeat(r.stars)+'☆'.repeat(5-r.stars);
+    var starColor=r.stars>=4?'var(--green)':r.stars===1?'var(--ox)':'var(--taupe)';
+    var borderColor=r.stars>=4?'var(--green)':r.stars===1?'var(--ox)':'var(--taupe)';
+    var badgeCls=r.stars>=4?'bg':r.stars===1?'br':'bw';
+    html+='<div class="rv" style="border-left:3px solid '+borderColor+'">';
+    html+='<div class="rv-h"><div><div class="rv-name">'+r.guest+'</div><div class="rv-date">'+(r.loc?r.loc+' - ':'')+r.date+' - '+r.nights+'n</div></div>';
+    html+='<div style="text-align:right"><div class="rv-stars" style="color:'+starColor+'">'+stars+'</div><div class="badge '+badgeCls+'" style="margin-top:4px">'+r.stars+' star'+(r.stars!==1?'s':'')+'</div></div></div>';
+    if(r.body) html+='<div class="rv-body">'+r.body+'</div>';
+    if(r.tags&&r.tags.length){ html+='<div class="rv-tags">'; r.tags.forEach(function(t){html+='<div class="rv-tag">'+t+'</div>';}); html+='</div>'; }
+    html+='</div>';
   });
-  feed.innerHTML = html;
+  feed.innerHTML=html;
 }
 
-// ── MARKET INTEL / PRICELABS ─────────────────
-function applyPL(pl) {
-  var pct = function(n) { return Math.round(n) + '%'; };
-  document.querySelectorAll('[data-live="your-occ-7"]').forEach(function(e) { e.textContent = pct(pl.yourOcc7); });
-  document.querySelectorAll('[data-live="mkt-occ-7"]').forEach(function(e) { e.textContent = pct(pl.mktOcc7); });
-  document.querySelectorAll('[data-live="your-occ-30"]').forEach(function(e) { e.textContent = pct(pl.yourOcc30); });
-  document.querySelectorAll('[data-live="mkt-occ-30"]').forEach(function(e) { e.textContent = pct(pl.mktOcc30); });
-  document.querySelectorAll('[data-live="your-occ-60"]').forEach(function(e) { e.textContent = pct(pl.yourOcc60); });
-  document.querySelectorAll('[data-live="mkt-occ-60"]').forEach(function(e) { e.textContent = pct(pl.mktOcc60); });
-  document.querySelectorAll('[data-live="price-floor"]').forEach(function(e) { e.textContent = '$' + pl.priceFloor; });
-  document.querySelectorAll('[data-live="price-base"]').forEach(function(e) { e.textContent = '$' + pl.priceBase; });
-  document.querySelectorAll('[data-live="rec-base"]').forEach(function(e) { e.textContent = '$' + pl.recBase; });
 
-  var d7 = pl.yourOcc7 - pl.mktOcc7;
-  var d30 = pl.yourOcc30 - pl.mktOcc30;
-  var d60 = pl.yourOcc60 - pl.mktOcc60;
-  setText('m-d7',     (d7>=0?'+':'') + d7 + 'pts');
-  setText('m-d30',    (d30>=0?'+':'') + d30 + 'pts');
-  setText('m-d60',    (d60>=0?'+':'') + d60 + 'pts');
-  setText('m-lead7',  (d7>=0?'+':'') + d7);
-  setText('m-lead30', (d30>=0?'+':'') + d30);
-  setText('m-lead60', (d60>=0?'+':'') + d60);
-  setText('perf-delta', (d30>=0?'+':'') + d30 + ' pts');
-  setText('kpi-rec-base', 'Rec: $' + pl.recBase);
+// ── FINANCES ─────────────────────────────────────────────────
+var BAL_KEY='cam_bal_v1';
+var BIZ_KEY='cam_biz_v1';
+var BILLS_KEY='cam_bills_v1';
+var SEEDED_KEY='cam_seeded_v4';
 
-  var v = pl.priceBase - pl.recBase;
-  var varEl = el('m-variance');
-  if (varEl) { varEl.textContent = 'Variance: ' + (v>=0?'+':'') + v; varEl.style.color = Math.abs(v)<=10 ? '#6ab88a' : 'var(--gold)'; }
+// Allocation: 42.8% shared expenses, 100% direct Airbnb expenses
+// Property: 118 W 21st St Bayonne NJ - Rental 998sf / Total 2332sf
+var DIRECT_CATS=['Supplies & Amenities','Marketing','Cleaning & Turnover','Platform Fees','Other'];
+function allocPct(cat) { return DIRECT_CATS.indexOf(cat)>=0 ? 1.0 : 0.428; }
 
-  var ts = new Date(pl.lastPushed || Date.now()).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
-  setText('mkt-ts-label', 'PriceLabs - ' + ts);
-  setText('cal-sync-ts', 'PriceLabs - ' + ts);
+function getBizExp() { try{return JSON.parse(localStorage.getItem(BIZ_KEY)||'[]');}catch(e){return [];} }
+function saveBizExp(items) { localStorage.setItem(BIZ_KEY,JSON.stringify(items)); }
+function getBills() { try{return JSON.parse(localStorage.getItem(BILLS_KEY)||'[]');}catch(e){return [];} }
+function saveBills(items) { localStorage.setItem(BILLS_KEY,JSON.stringify(items)); }
 
-  var bars = [['m-bar7',d7],['m-bar30',d30],['m-bar60',d60]];
-  bars.forEach(function(pair) {
-    var barEl = el(pair[0]);
-    if (barEl) barEl.style.width = Math.min(100, (pair[1]/50)*100) + '%';
-  });
-}
-
-function loadCachedPL() {
-  try { var pl = JSON.parse(localStorage.getItem('cam_pl') || 'null'); if (pl) applyPL(pl); } catch(e) {}
-}
-
-// ── SYNC ─────────────────────────────────────
-function showToast(pl, briefing) {
-  var t = el('toast');
-  var c = el('toast-content');
-  if (!t || !c) return;
-  var ts = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
-  var html = '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:12px">Synced - ' + ts + '</div>';
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">';
-  html += '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);margin-bottom:3px">7 days</div><div style="font-size:20px;color:var(--cream)">' + pl.yourOcc7 + '%</div><div style="font-size:9px;color:var(--taupe)">mkt ' + pl.mktOcc7 + '%</div></div>';
-  html += '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);margin-bottom:3px">30 days</div><div style="font-size:20px;color:var(--cream)">' + pl.yourOcc30 + '%</div><div style="font-size:9px;color:var(--taupe)">mkt ' + pl.mktOcc30 + '%</div></div>';
-  html += '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);margin-bottom:3px">60 days</div><div style="font-size:20px;color:var(--cream)">' + pl.yourOcc60 + '%</div><div style="font-size:9px;color:var(--taupe)">mkt ' + pl.mktOcc60 + '%</div></div>';
-  html += '</div>';
-  html += '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px 12px;display:flex;gap:18px;font-size:12px;color:var(--cream);margin-bottom:' + (briefing ? '12px' : '0') + '">';
-  html += '<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Floor</div><strong>$' + pl.priceFloor + '</strong></div>';
-  html += '<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Base</div><strong>$' + pl.priceBase + '</strong></div>';
-  html += '<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Recommended</div><strong style="color:var(--gold)">$' + pl.recBase + '</strong></div>';
-  html += '</div>';
-  if (briefing) html += '<div style="font-size:12px;color:rgba(238,234,228,.8);line-height:1.6;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">' + briefing + '</div>';
-  c.innerHTML = html;
-  t.style.display = 'block';
-  setTimeout(function() { t.style.display = 'none'; }, 15000);
-}
-
-async function getBriefing(pl) {
+function loadBal(ovOnly) {
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json', 'x-api-key':ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:200, messages:[{role:'user', content:'Camichino STR dashboard synced. 2 sentences max. Status + #1 action. Occ 7d: ' + pl.yourOcc7 + '% vs ' + pl.mktOcc7 + '% market. 30d: ' + pl.yourOcc30 + '% vs ' + pl.mktOcc30 + '%. Rec base $' + pl.recBase + ', current $' + pl.priceBase + '. Be direct.'}]})
+    var d=JSON.parse(localStorage.getItem(BAL_KEY)||'{}');
+    if(!ovOnly){
+      ['chk','sav','jnt','res'].forEach(function(f){var e=el('bal-'+f);if(e&&d[f])e.value=d[f];});
+      updateReserve();
+    }
+    var resVal=parseFloat(d.res||0);
+    var resTarget=parseFloat(d.resTarget||17500);
+    setText('ov-reserve',fmt$(resVal));
+    var bar=el('ov-res-bar');if(bar)bar.style.width=Math.min(100,(resVal/resTarget)*100)+'%';
+  }catch(e){}
+}
+function saveBal(){
+  try{
+    var d={};
+    ['chk','sav','jnt','res'].forEach(function(f){var e=el('bal-'+f);if(e)d[f]=e.value;});
+    var rt=el('res-target');if(rt)d.resTarget=rt.value;
+    localStorage.setItem(BAL_KEY,JSON.stringify(d));
+    updateReserve();loadBal(true);
+  }catch(e){}
+}
+function updateReserve(){
+  var resEl=el('bal-res');var targetEl=el('res-target');if(!resEl)return;
+  var val=parseFloat(resEl.value||0);var target=parseFloat((targetEl&&targetEl.value)||17500);
+  var pct=Math.min(100,(val/target)*100);
+  var bar=el('res-bar');var pctEl=el('res-pct');var wrap=el('res-bar-wrap');var hint=el('res-hint');var badge=el('res-badge');
+  if(bar)bar.style.width=pct+'%';if(pctEl)pctEl.textContent=Math.round(pct)+'%';
+  if(wrap)wrap.style.display=val>0?'':'none';if(hint)hint.style.display=val>0?'none':'';
+  if(badge){badge.style.display=val>0?'':'none';badge.textContent=pct>=100?'Target Met':Math.round(pct)+'% funded';badge.style.background=pct>=100?'#e8f0e8':'#fdf8f0';badge.style.color=pct>=100?'var(--green)':'var(--warn)';}
+}
+
+function renderBizExp(){
+  var items=getBizExp();
+  var total=items.reduce(function(s,e){return s+(e.amount||0);},0);
+  var ded=items.reduce(function(s,e){return s+(e.amount||0)*allocPct(e.category||'');},0);
+  var pastPayouts=BOOKINGS.filter(function(b){return b.status==='past'&&b.guest!=='Camille (Internal)';}).reduce(function(s,b){return s+b.payout;},0);
+  var ytd=Math.max(pastPayouts,2897);
+  var noi=ytd-total;
+  setText('biz-total',fmt$2(total));setText('biz-count',items.length+' entries');
+  setText('biz-ded',fmt$2(ded));setText('biz-noi',fmt$(noi));
+  setText('biz-noi-sub','Actualized $'+ytd.toLocaleString()+' - expenses');
+  var byCat={};items.forEach(function(e){byCat[e.category]=(byCat[e.category]||0)+(e.amount||0);});
+  var topCat=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];})[0];
+  setText('biz-top',topCat||'-');setText('biz-top-amt',topCat?fmt$2(byCat[topCat]):'');
+  var tbody=el('biz-tbody');if(!tbody)return;
+  if(!items.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--taupe);padding:28px;font-size:12px">No expenses yet.</td></tr>';return;}
+  var rows='';
+  items.forEach(function(e,i){
+    var pct=allocPct(e.category||'');var dedAmt=(e.amount||0)*pct;
+    rows+='<tr><td>'+( e.date||'-')+'</td><td>'+(e.description||'-')+'</td><td>'+(e.category||'-')+'</td><td>'+fmt$2(e.amount||0)+'</td>';
+    rows+='<td style="color:var(--green)">'+fmt$2(dedAmt)+'</td>';
+    rows+='<td style="font-size:10px;color:var(--taupe)">'+(pct===1?'100%':'42.8%')+'</td>';
+    rows+='<td><button class="btn btn-d" onclick="delBizExp('+i+')">Del</button></td></tr>';
+  });
+  tbody.innerHTML=rows;
+}
+
+function addBizExp(){
+  var date=el('biz-date')?el('biz-date').value:'';
+  var desc=el('biz-desc')?el('biz-desc').value.trim():'';
+  var cat=el('biz-cat')?el('biz-cat').value:'';
+  var amt=parseFloat(el('biz-amt')?el('biz-amt').value:0);
+  if(!desc||isNaN(amt)){alert('Please enter description and amount');return;}
+  var items=getBizExp();items.unshift({date:date,description:desc,category:cat,amount:amt});
+  saveBizExp(items);renderBizExp();
+  if(el('biz-desc'))el('biz-desc').value='';if(el('biz-amt'))el('biz-amt').value='';
+}
+function delBizExp(i){var items=getBizExp();items.splice(i,1);saveBizExp(items);renderBizExp();}
+
+function renderBills(){
+  var items=getBills();
+  var total=items.reduce(function(s,b){return s+(b.amount||0);},0);
+  var ded=total*0.428;
+  var tbody=el('bills-tbody');if(!tbody)return;
+  if(!items.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--taupe);padding:20px;font-size:12px">No bills logged yet.</td></tr>';return;}
+  var rows='';
+  items.forEach(function(b,i){
+    rows+='<tr><td>'+(b.date||'-')+'</td><td>'+b.description+'</td><td>'+b.category+'</td><td>'+fmt$2(b.amount)+'</td><td style="color:var(--green)">'+fmt$2(b.amount*0.428)+'</td><td><button class="btn btn-d" onclick="delBill('+i+')">Del</button></td></tr>';
+  });
+  tbody.innerHTML=rows;
+}
+function addBill(){
+  var date=el('bill-date')?el('bill-date').value:'';
+  var desc=el('bill-desc')?el('bill-desc').value.trim():'';
+  var cat=el('bill-cat')?el('bill-cat').value:'';
+  var amt=parseFloat(el('bill-amt')?el('bill-amt').value:0);
+  if(!desc||isNaN(amt)){alert('Please enter description and amount');return;}
+  var items=getBills();items.unshift({date:date,description:desc,category:cat,amount:amt});
+  saveBills(items);renderBills();
+  if(el('bill-desc'))el('bill-desc').value='';if(el('bill-amt'))el('bill-amt').value='';
+}
+function delBill(i){var items=getBills();items.splice(i,1);saveBills(items);renderBills();}
+
+function calcTax(){
+  var fed=parseFloat((el('fed-rate')||{value:22}).value)||22;
+  var nj=parseFloat((el('nj-rate')||{value:6.37}).value)||6.37;
+  var se=parseFloat((el('se-rate')||{value:0}).value)||0;
+  var inc=parseFloat((el('gross-income')||{value:2897}).value)||2897;
+  var rate=fed+nj+se; var owed=inc*(rate/100); var net=inc-owed; var qtr=owed/4;
+  setText('tax-rate-display',rate.toFixed(1)+'%');
+  setText('tax-gross-display',fmt$2(inc));setText('tax-owed-display',fmt$2(owed));setText('tax-net-display',fmt$2(net));
+  setText('q1-est',fmt$(qtr));setText('q2-est',fmt$(qtr));setText('q3-est',fmt$(qtr));setText('q4-est',fmt$(qtr));
+}
+
+
+// ── KEEPER SYNC ───────────────────────────────────────────────
+var KEEPER_DATA = [{"date":"2026-04-13","description":"Ring AI","category":"Other","amount":5.0,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Amazon","category":"Supplies & Amenities","amount":8.98,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Floor & Decor","category":"Maintenance & Repairs","amount":88.87,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Anthropic","category":"Professional Services","amount":1.13,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Lowe's","category":"Supplies & Amenities","amount":224.38,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Lowe's","category":"Supplies & Amenities","amount":90.76,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Lowe's","category":"Supplies & Amenities","amount":261.75,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Floor & Decor","category":"Maintenance & Repairs","amount":88.87,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Public Service Co.","category":"Utilities","amount":124.97,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Floor & Decor","category":"Maintenance & Repairs","amount":1046.95,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":149.75,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Walmart","category":"Supplies & Amenities","amount":55.11,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Google Workspace","category":"Professional Services","amount":6.36,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":452.99,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":1090.82,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Google Workspace","category":"Professional Services","amount":13.98,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":261.75,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Meta Platforms","category":"Marketing","amount":25.0,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Amazon","category":"Supplies & Amenities","amount":55.88,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Meta Platforms","category":"Marketing","amount":124.97,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-03-30","description":"Creative Market","category":"Professional Services","amount":29.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":99.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":89.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":24.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":203.25,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Pricelabs","category":"Professional Services","amount":20.99,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Hulu","category":"Other","amount":19.15,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-23","description":"Spotify","category":"Other","amount":13.84,"msgId":"19d1b25c169860e9","source":"keeper"},{"date":"2026-03-23","description":"Amazon","category":"Supplies & Amenities","amount":173.22,"msgId":"19d1b25c169860e9","source":"keeper"},{"date":"2026-03-23","description":"Anthropic","category":"Professional Services","amount":5.0,"msgId":"19d1b25c169860e9","source":"keeper"},{"date":"2026-03-16","description":"Anthropic","category":"Professional Services","amount":199.94,"msgId":"19cf719b5faf1bca","source":"keeper"},{"date":"2026-03-16","description":"Anthropic","category":"Professional Services","amount":20.0,"msgId":"19cf719b5faf1bca","source":"keeper"},{"date":"2026-03-09","description":"Verizon","category":"Utilities","amount":148.42,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"Water Bill","category":"Utilities","amount":102.26,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"Meta Platforms","category":"Marketing","amount":50.03,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"PSE&G","category":"Utilities","amount":143.87,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"Google Workspace","category":"Professional Services","amount":9.38,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-04-13","description":"Fast-Growing Trees (8x Blue Arrow Juniper)","category":"Maintenance & Repairs","amount":676.88,"msgId":"19d87c5a903cfea4","source":"keeper"}];
+// Add Fast-Growing Trees entry (Apr 13, 2026 — 8x Blue Arrow Juniper)
+var FGT_ENTRY = {date:'2026-04-13',description:'Fast-Growing Trees (8x Blue Arrow Juniper)',category:'Maintenance & Repairs',amount:676.88,msgId:'19d87c5a903cfea4',source:'keeper'};
+// Inject into KEEPER_DATA if not already there
+(function(){
+  var already=KEEPER_DATA.some(function(e){return e.msgId===FGT_ENTRY.msgId&&e.description===FGT_ENTRY.description;});
+  if(!already) KEEPER_DATA.push(FGT_ENTRY);
+})();
+
+function seedExpenses(){
+  if(localStorage.getItem(SEEDED_KEY)) return;
+  saveBizExp(KEEPER_DATA.slice());
+  localStorage.setItem(SEEDED_KEY,'1');
+}
+
+function syncKeeper(){
+  var btn=el('keeper-btn');var st=el('keeper-st');
+  if(btn){btn.disabled=true;btn.textContent='Syncing...';}
+  try{
+    var existing=getBizExp();var added=0;
+    KEEPER_DATA.forEach(function(e){
+      var dupe=existing.some(function(x){
+        return x.source==='keeper'&&x.msgId===e.msgId&&x.description===e.description&&Math.abs((x.amount||0)-e.amount)<0.02;
+      });
+      if(!dupe){existing.unshift(e);added++;}
     });
-    var d = await res.json();
-    return (d.content && d.content[0] && d.content[0].text) || '';
-  } catch(e) { return ''; }
+    saveBizExp(existing);renderBizExp();
+    if(btn){btn.style.background='var(--green)';btn.textContent=added+' added';btn.disabled=false;}
+    if(st)st.textContent=added+' new expenses imported';
+    setTimeout(function(){if(btn){btn.textContent='Sync from Keeper';btn.style.background='var(--ox)';}if(st)st.textContent='6 emails - Mar 9 to Apr 13, 2026';},3000);
+  }catch(err){if(btn){btn.textContent='Sync from Keeper';btn.disabled=false;}if(st)st.textContent='Sync failed';}
 }
 
-async function masterSync() {
-  var btn = el('sync-btn');
-  var st = el('sync-st');
-  if (btn) { btn.disabled = true; btn.textContent = 'Syncing...'; }
-  try {
-    if (st) st.textContent = 'Fetching PriceLabs...';
-    var res = await fetch(PL_PROXY + '?listing_id=' + LISTING_ID, {redirect:'follow'});
-    if (!res.ok) throw new Error('PriceLabs ' + res.status);
-    var data = await res.json();
-    var l = data.listings && data.listings[0];
-    if (l) {
-      var p = function(v) { return parseFloat(String(v).replace(/[^0-9.]/g,'')) || 0; };
-      var pct = function(v) { return Math.round(p(v)); }; // PriceLabs already returns percentages
-      var pl = {
-        yourOcc7:  pct(l.occupancy_next_7),    mktOcc7:  pct(l.market_occupancy_next_7),
-        yourOcc30: pct(l.occupancy_next_30),   mktOcc30: pct(l.market_occupancy_next_30),
-        yourOcc60: pct(l.occupancy_next_60),   mktOcc60: pct(l.market_occupancy_next_60),
-        recBase:   l.recommended_base_price,   priceFloor: l.min_price || l.min,
-        priceBase: l.base_price || l.base,     lastPushed: l.last_refreshed_at,
-        fetchedAt: new Date().toISOString()
+// ── AI EXPENSE IMPORT ────────────────────────────────────────
+function handleDrop(event){
+  event.preventDefault();var dz=el('dropzone');if(dz)dz.classList.remove('over');
+  var file=event.dataTransfer&&event.dataTransfer.files[0];if(file)processFile(file);
+}
+function handleFile(event){var file=event.target&&event.target.files[0];if(file)processFile(file);}
+function processFile(file){
+  var prog=el('parse-progress');var msg=el('parse-msg');
+  if(prog)prog.style.display='block';if(msg)msg.textContent='Reading '+file.name+'...';
+  var reader=new FileReader();
+  reader.onload=function(e){parseWithAI(e.target.result,file.type.indexOf('image')!==-1,file.type);};
+  if(file.type.indexOf('image')!==-1||file.type==='application/pdf') reader.readAsDataURL(file);
+  else reader.readAsText(file);
+}
+function parseWithAI(content,isImage,fileType){
+  var prog=el('parse-progress');var msg=el('parse-msg');
+  if(msg)msg.textContent='Analyzing with Claude...';
+  var messages;
+  if(isImage){
+    var b64=content.split(',')[1];
+    messages=[{role:'user',content:[{type:'image',source:{type:'base64',media_type:fileType||'image/jpeg',data:b64}},{type:'text',text:'Extract all expenses from this receipt. Return ONLY a JSON array: [{date(YYYY-MM-DD),description,category,amount}]. Categories: Platform Fees, Cleaning & Turnover, Utilities, Insurance, Maintenance & Repairs, Furniture & Furnishings, Marketing, Professional Services, Supplies & Amenities, Mortgage Interest, Property Tax, Other. No other text.'}]}];
+  } else {
+    messages=[{role:'user',content:'Extract expenses from this text. Return ONLY JSON array: [{date,description,category,amount}]. Categories: Platform Fees, Cleaning & Turnover, Utilities, Insurance, Maintenance & Repairs, Furniture & Furnishings, Marketing, Professional Services, Supplies & Amenities, Mortgage Interest, Property Tax, Other. No other text.\n\n'+content.slice(0,8000)}];
+  }
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:messages})})
+  .then(function(r){return r.json();}).then(function(data){
+    var text=(data.content&&data.content[0]&&data.content[0].text)||'[]';
+    try{
+      var parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+      showImportPreview(parsed);if(prog)prog.style.display='none';
+    }catch(e){if(prog)prog.style.display='none';}
+  }).catch(function(){if(prog)prog.style.display='none';});
+}
+
+function showImportPreview(items){
+  var preview=el('parse-preview');var count=el('parse-count');var tbl=el('parse-table');
+  if(!preview) return;
+  if(count)count.textContent=items.length+' expenses found';
+  window._importedExpenses=items;
+  if(tbl){
+    var existingExp=getBizExp();
+    var rows='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:rgba(255,255,255,.06)"><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Date</th><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Description</th><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Category</th><th style="padding:7px 10px;text-align:right;color:var(--taupe);font-size:9px;text-transform:uppercase">Amount</th></tr></thead><tbody>';
+    items.forEach(function(e){
+      var amt=parseFloat(e.amount||0); var desc=(e.description||'').toLowerCase().trim(); var date=e.date||'';
+      var isDupe=existingExp.some(function(x){return (x.description||'').toLowerCase().trim()===desc&&Math.abs((x.amount||0)-amt)<0.02&&(x.date||'')===date;});
+      var dupeFlag=isDupe?'<span style="background:rgba(224,112,112,.2);color:#e07070;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px">DUPE</span>':'';
+      rows+='<tr style="border-top:1px solid rgba(255,255,255,.08);'+(isDupe?'opacity:0.5':'')+'"><td style="padding:7px 10px">'+(e.date||'-')+'</td><td style="padding:7px 10px">'+(e.description||'-')+dupeFlag+'</td><td style="padding:7px 10px;font-size:10px">'+(e.category||'-')+'</td><td style="padding:7px 10px;text-align:right">'+fmt$2(amt)+'</td></tr>';
+    });
+    tbl.innerHTML=rows+'</tbody></table>';
+  }
+  preview.style.display='block';
+}
+
+function importExpenses(){
+  var items=window._importedExpenses||[];var existing=getBizExp();var added=0;var skipped=0;
+  items.forEach(function(e){
+    var amt=parseFloat(e.amount||0);var desc=(e.description||'').toLowerCase().trim();var date=e.date||'';
+    var isDupe=existing.some(function(x){return (x.description||'').toLowerCase().trim()===desc&&Math.abs((x.amount||0)-amt)<0.02&&(x.date||'')===date;});
+    if(!isDupe){existing.unshift({date:date,description:e.description||'',category:e.category||'Other',amount:amt});added++;}
+    else skipped++;
+  });
+  saveBizExp(existing);clearImport();renderBizExp();
+  var st=el('sync-st');
+  if(skipped>0&&st){st.textContent=added+' imported, '+skipped+' duplicate'+(skipped>1?'s':'')+' skipped';setTimeout(function(){st.textContent='';},4000);}
+}
+
+function clearImport(){
+  window._importedExpenses=[];
+  var preview=el('parse-preview');var prog=el('parse-progress');var fi=el('file-input');
+  if(preview)preview.style.display='none';if(prog)prog.style.display='none';if(fi)fi.value='';
+  var dz=el('dropzone');if(dz)dz.innerHTML='<div class="dz-ico">📄</div><div class="dz-t">Drop file here or click to browse</div><div class="dz-s">CSV - PDF - PNG - JPG - XLSX - any bank statement or receipt</div>';
+}
+
+
+// ── MARKET INTEL / PRICELABS ──────────────────────────────────
+function applyPL(pl){
+  var pct=function(n){return Math.round(n)+'%';};
+  document.querySelectorAll('[data-live="your-occ-7"]').forEach(function(e){e.textContent=pct(pl.yourOcc7);});
+  document.querySelectorAll('[data-live="mkt-occ-7"]').forEach(function(e){e.textContent=pct(pl.mktOcc7);});
+  document.querySelectorAll('[data-live="your-occ-30"]').forEach(function(e){e.textContent=pct(pl.yourOcc30);});
+  document.querySelectorAll('[data-live="mkt-occ-30"]').forEach(function(e){e.textContent=pct(pl.mktOcc30);});
+  document.querySelectorAll('[data-live="your-occ-60"]').forEach(function(e){e.textContent=pct(pl.yourOcc60);});
+  document.querySelectorAll('[data-live="mkt-occ-60"]').forEach(function(e){e.textContent=pct(pl.mktOcc60);});
+  document.querySelectorAll('[data-live="price-floor"]').forEach(function(e){e.textContent='$'+pl.priceFloor;});
+  document.querySelectorAll('[data-live="price-base"]').forEach(function(e){e.textContent='$'+pl.priceBase;});
+  document.querySelectorAll('[data-live="rec-base"]').forEach(function(e){e.textContent='$'+pl.recBase;});
+  var d7=pl.yourOcc7-pl.mktOcc7; var d30=pl.yourOcc30-pl.mktOcc30; var d60=pl.yourOcc60-pl.mktOcc60;
+  setText('m-d7',(d7>=0?'+':'')+d7+'pts'); setText('m-d30',(d30>=0?'+':'')+d30+'pts'); setText('m-d60',(d60>=0?'+':'')+d60+'pts');
+  setText('m-lead7',(d7>=0?'+':'')+d7); setText('m-lead30',(d30>=0?'+':'')+d30); setText('m-lead60',(d60>=0?'+':'')+d60);
+  setText('perf-delta',(d30>=0?'+':'')+d30+' pts'); setText('kpi-rec-base','Rec: $'+pl.recBase);
+  var v=pl.priceBase-pl.recBase;
+  var varEl=el('m-variance');if(varEl){varEl.textContent='Variance: '+(v>=0?'+':'')+v;varEl.style.color=Math.abs(v)<=10?'#6ab88a':'var(--gold)';}
+  var ts=new Date(pl.lastPushed||Date.now()).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  setText('mkt-ts-label','PriceLabs - '+ts);
+  ['m-bar7','m-bar30','m-bar60'].forEach(function(id,i){
+    var bar=el(id);if(bar)bar.style.width=Math.min(100,Math.abs([d7,d30,d60][i])/50*100)+'%';
+  });
+}
+
+function loadCachedPL(){
+  try{var pl=JSON.parse(localStorage.getItem('cam_pl')||'null');if(pl)applyPL(pl);}catch(e){}
+}
+
+function showToast(pl,briefing){
+  var t=el('toast');var c=el('toast-content');if(!t||!c) return;
+  var ts=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  var html='<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:12px">Synced - '+ts+'</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">';
+  [{label:'7 days',your:pl.yourOcc7,mkt:pl.mktOcc7},{label:'30 days',your:pl.yourOcc30,mkt:pl.mktOcc30},{label:'60 days',your:pl.yourOcc60,mkt:pl.mktOcc60}].forEach(function(row){
+    html+='<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--taupe);margin-bottom:3px">'+row.label+'</div><div style="font-size:20px;color:var(--cream)">'+row.your+'%</div><div style="font-size:9px;color:var(--taupe)">mkt '+row.mkt+'%</div></div>';
+  });
+  html+='</div><div style="background:rgba(255,255,255,.06);border-radius:6px;padding:9px 12px;display:flex;gap:18px;font-size:12px;color:var(--cream);margin-bottom:'+(briefing?'12px':'0')+'">';
+  html+='<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Floor</div><strong>$'+pl.priceFloor+'</strong></div>';
+  html+='<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Base</div><strong>$'+pl.priceBase+'</strong></div>';
+  html+='<div><div style="font-size:9px;color:var(--taupe);margin-bottom:2px">Recommended</div><strong style="color:var(--gold)">$'+pl.recBase+'</strong></div></div>';
+  if(briefing) html+='<div style="font-size:12px;color:rgba(238,234,228,.8);line-height:1.6;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">'+briefing+'</div>';
+  c.innerHTML=html;t.style.display='block';
+  setTimeout(function(){t.style.display='none';},15000);
+}
+
+async function getBriefing(pl){
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:'Camichino STR synced. 2 sentences max. Status + top action. Occ 7d: '+pl.yourOcc7+'% vs '+pl.mktOcc7+'% market. 30d: '+pl.yourOcc30+'% vs '+pl.mktOcc30+'%. Rec $'+pl.recBase+', current $'+pl.priceBase+'. Be direct.'}]})});
+    var d=await res.json();return(d.content&&d.content[0]&&d.content[0].text)||'';
+  }catch(e){return '';}
+}
+
+async function masterSync(){
+  var btn=el('sync-btn');var st=el('sync-st');
+  if(btn){btn.disabled=true;btn.textContent='Syncing...';}
+  try{
+    if(st)st.textContent='Fetching PriceLabs...';
+    var res=await fetch(PL_PROXY+'?listing_id='+LISTING_ID,{redirect:'follow'});
+    if(!res.ok) throw new Error('PriceLabs '+res.status);
+    var data=await res.json();
+    var l=data.listings&&data.listings[0];
+    if(l){
+      var p=function(v){return parseFloat(String(v).replace(/[^0-9.]/g,''))||0;};
+      var pl={
+        yourOcc7:Math.round(p(l.occupancy_next_7)),       mktOcc7:Math.round(p(l.market_occupancy_next_7)),
+        yourOcc30:Math.round(p(l.occupancy_next_30)),     mktOcc30:Math.round(p(l.market_occupancy_next_30)),
+        yourOcc60:Math.round(p(l.occupancy_next_60)),     mktOcc60:Math.round(p(l.market_occupancy_next_60)),
+        recBase:l.recommended_base_price,                  priceFloor:l.min_price||l.min,
+        priceBase:l.base_price||l.base,                   lastPushed:l.last_refreshed_at,
+        fetchedAt:new Date().toISOString()
       };
-      localStorage.setItem('cam_pl', JSON.stringify(pl));
+      localStorage.setItem('cam_pl',JSON.stringify(pl));
       applyPL(pl);
-      if (st) st.textContent = 'Getting AI briefing...';
-      var briefing = await getBriefing(pl);
-      showToast(pl, briefing);
+      if(st)st.textContent='Getting AI briefing...';
+      var briefing=await getBriefing(pl);
+      showToast(pl,briefing);
     }
-    if (btn) { btn.textContent = 'Sync Dashboard'; btn.disabled = false; btn.style.background = 'var(--green)'; setTimeout(function() { btn.style.background = 'var(--ox)'; }, 2000); }
-    if (st) st.textContent = 'Synced just now';
-  } catch(e) {
-    if (btn) { btn.textContent = 'Sync Dashboard'; btn.disabled = false; }
-    if (st) st.textContent = 'Sync failed: ' + e.message;
+    if(btn){btn.textContent='Sync Dashboard';btn.disabled=false;btn.style.background='var(--green)';setTimeout(function(){btn.style.background='var(--ox)';},2000);}
+    if(st)st.textContent='Synced just now';
+  }catch(e){
+    if(btn){btn.textContent='Sync Dashboard';btn.disabled=false;}
+    if(st)st.textContent='Sync failed: '+e.message;
   }
 }
 
-// ── AI ADVISOR ───────────────────────────────
-function setAdvPrompt(text) {
-  var ta = el('adv-prompt');
-  if (ta) ta.value = text;
+// ── AI ADVISOR ────────────────────────────────────────────────
+function setAdvPrompt(text){var ta=el('adv-prompt');if(ta)ta.value=text;}
+
+async function runAdv(presetText){
+  var ta=el('adv-prompt');var btn=el('adv-run');var out=el('adv-out');var loading=el('adv-loading');
+  if(presetText){if(ta)ta.value=presetText;}
+  else if(!ta||!ta.value.trim()){
+    if(ta)ta.value='Run a complete business audit: pricing vs market, occupancy gaps, revenue YTD vs target, review trajectory toward Superhost 4.8, and top 3 action items tagged [URGENT]/[THIS WEEK]/[THIS MONTH].';
+    else return;
+  }
+  if(!ta||!ta.value.trim()) return;
+  if(btn){btn.disabled=true;btn.textContent='Analyzing...';}
+  if(out)out.style.display='none';if(loading)loading.style.display='block';
+  var ytd=Math.max(BOOKINGS.filter(function(b){return b.status==='past'&&b.guest!=='Camille (Internal)';}).reduce(function(s,b){return s+b.payout;},0),2897);
+  var expenses=getBizExp().reduce(function(s,e){return s+(e.amount||0);},0);
+  var current=BOOKINGS.filter(function(b){return b.status==='current';});
+  var cachedPL=null;try{cachedPL=JSON.parse(localStorage.getItem('cam_pl')||'null');}catch(e){}
+  var context='You are the AI Business Advisor for Camichino, boutique STR at 118 W 21st Street, Bayonne, NJ.'+
+    '\n\nPROPERTY DATA (today is April 20, 2026):'+
+    '\n- Airbnb rating: 4.44/5 (9 reviews) | Superhost target: 4.8'+
+    '\n- Current guest: '+(current.length?current[0].guest+' (checkout Apr 24)':'none')+
+    '\n- YTD actualized revenue: '+fmt$(ytd)+' | Expenses: '+fmt$(expenses)+' | NOI: '+fmt$(ytd-expenses)+
+    '\n- Cancellation rate: 26% (high - policy review needed)'+
+    '\n- World Cup Jul 18-23: locked at $1,500/night ($7,500 total)'+
+    '\n- PriceLabs: '+(cachedPL?'Base $'+cachedPL.priceBase+', Rec $'+cachedPL.recBase+', Occ 30d: '+cachedPL.yourOcc30+'% vs '+cachedPL.mktOcc30+'% market':'tap Sync for live data')+
+    '\n- Brand: NO discounting. Protect ADR at all times.'+
+    '\n\nFormat response with sections: HEADLINE, METRICS, OPPORTUNITIES, RISKS, ACTION ITEMS (tag [URGENT]/[THIS WEEK]/[THIS MONTH]).';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:context+'\n\nQuestion: '+ta.value}]})});
+    var d=await res.json();
+    var text=(d.content&&d.content[0]&&d.content[0].text)||'No response received.';
+    if(out){out.innerHTML=renderAdvOutput(text);out.style.display='block';}
+  }catch(e){
+    if(out){out.innerHTML='<div style="color:var(--taupe)">Error connecting to AI. Please try again.</div>';out.style.display='block';}
+  }
+  if(loading)loading.style.display='none';
+  if(btn){btn.textContent='Run Full Business Audit';btn.disabled=false;}
 }
 
-function renderAdvOutput(text) {
-  // Parse markdown-style response into styled HTML cards
-  var lines = text.split('\n');
-  var result = '';
-  var inSection = false;
-  var sectionContent = '';
-  var sectionTitle = '';
-  var sectionColor = 'var(--taupe)';
-
-  function flushSection() {
-    if (!sectionContent.trim() && !sectionTitle) return;
-    var color = sectionColor;
-    result += '<div style="margin-bottom:18px;border-left:3px solid ' + color + ';padding:14px 18px;background:rgba(255,255,255,.04);border-radius:0 8px 8px 0">';
-    if (sectionTitle) {
-      result += '<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:' + color + ';margin-bottom:10px">' + sectionTitle + '</div>';
-    }
-    result += '<div style="font-size:13px;color:rgba(238,234,228,.85);line-height:1.8">' + sectionContent + '</div>';
-    result += '</div>';
-    sectionContent = '';
-    sectionTitle = '';
+function renderAdvOutput(text){
+  var lines=text.split('\n');var result='';var sectionContent='';var sectionTitle='';var sectionColor='var(--taupe)';
+  function flushSection(){
+    if(!sectionContent.trim()&&!sectionTitle) return;
+    result+='<div style="margin-bottom:18px;border-left:3px solid '+sectionColor+';padding:14px 18px;background:rgba(255,255,255,.04);border-radius:0 8px 8px 0">';
+    if(sectionTitle) result+='<div style="font-family:Tenor Sans,sans-serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:'+sectionColor+';margin-bottom:10px">'+sectionTitle+'</div>';
+    result+='<div style="font-size:13px;color:rgba(238,234,228,.85);line-height:1.8">'+sectionContent+'</div></div>';
+    sectionContent='';sectionTitle='';
   }
-
-  lines.forEach(function(line) {
-    var trimmed = line.trim();
-    if (!trimmed || trimmed === '---') {
-      // section divider - flush current
-      if (sectionContent.trim()) flushSection();
+  lines.forEach(function(line){
+    var trimmed=line.trim();
+    if(!trimmed||trimmed==='---'){if(sectionContent.trim())flushSection();return;}
+    if(trimmed.startsWith('## ')){
+      flushSection();sectionTitle=trimmed.replace(/^## /,'');
+      var t=sectionTitle.toUpperCase();
+      if(t.includes('HEADLINE'))sectionColor='var(--cream)';
+      else if(t.includes('METRIC'))sectionColor='#6ab88a';
+      else if(t.includes('OPPORTUNIT'))sectionColor='var(--gold)';
+      else if(t.includes('RISK'))sectionColor='#e07070';
+      else if(t.includes('ACTION'))sectionColor='var(--ox)';
+      else sectionColor='var(--taupe)';
       return;
     }
-    // ## Heading = new section
-    if (trimmed.startsWith('## ')) {
-      flushSection();
-      sectionTitle = trimmed.replace(/^## /, '');
-      // Color-code sections
-      var t = sectionTitle.toUpperCase();
-      if (t.includes('HEADLINE')) sectionColor = 'var(--cream)';
-      else if (t.includes('METRIC')) sectionColor = '#6ab88a';
-      else if (t.includes('OPPORTUNIT')) sectionColor = 'var(--gold)';
-      else if (t.includes('RISK')) sectionColor = '#e07070';
-      else if (t.includes('ACTION')) sectionColor = 'var(--ox)';
-      else sectionColor = 'var(--taupe)';
-      return;
-    }
-    // **bold** text
-    var formatted = trimmed
-      .replace(/\*\*([^*]+)\*\*/g, '<strong style="color:var(--cream);font-weight:500">$1</strong>')
-      .replace(/\[URGENT\]/g, '<span style="background:rgba(73,10,10,.5);color:#ffb3b3;font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">URGENT</span>')
-      .replace(/\[THIS WEEK\]/g, '<span style="background:rgba(200,169,110,.25);color:var(--gold);font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">THIS WEEK</span>')
-      .replace(/\[THIS MONTH\]/g, '<span style="background:rgba(90,122,90,.2);color:#8aba8a;font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">THIS MONTH</span>');
-    // Bullet points
-    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      sectionContent += '<div style="display:flex;gap:10px;margin-bottom:6px;align-items:flex-start"><span style="color:var(--ox);flex-shrink:0;margin-top:2px">▸</span><span>' + formatted.replace(/^[-*] /, '') + '</span></div>';
+    var formatted=trimmed.replace(/\*\*([^*]+)\*\*/g,'<strong style="color:var(--cream);font-weight:500">$1</strong>').replace(/\[URGENT\]/g,'<span style="background:rgba(73,10,10,.5);color:#ffb3b3;font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">URGENT</span>').replace(/\[THIS WEEK\]/g,'<span style="background:rgba(200,169,110,.25);color:var(--gold);font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">THIS WEEK</span>').replace(/\[THIS MONTH\]/g,'<span style="background:rgba(90,122,90,.2);color:#8aba8a;font-size:9px;padding:2px 7px;border-radius:4px;font-family:Tenor Sans,sans-serif;letter-spacing:.08em;margin-right:6px">THIS MONTH</span>');
+    if(trimmed.startsWith('- ')||trimmed.startsWith('* ')){
+      sectionContent+='<div style="display:flex;gap:10px;margin-bottom:6px;align-items:flex-start"><span style="color:var(--ox);flex-shrink:0;margin-top:2px">▸</span><span>'+formatted.replace(/^[-*] /,'')+'</span></div>';
     } else {
-      sectionContent += '<div style="margin-bottom:6px">' + formatted + '</div>';
+      sectionContent+='<div style="margin-bottom:6px">'+formatted+'</div>';
     }
   });
   flushSection();
-  return result || '<div style="color:var(--taupe);font-size:13px">No response received.</div>';
+  return result||'<div style="color:var(--taupe);font-size:13px">No response received.</div>';
 }
 
-async function runAdv(presetText) {
-  var ta = el('adv-prompt');
-  var btn = el('adv-run');
-  var out = el('adv-out');
-  var loading = el('adv-loading');
-  // Use preset text if provided, otherwise use full audit prompt
-  if (presetText) {
-    if (ta) ta.value = presetText;
-  } else if (!ta || !ta.value.trim()) {
-    // Full audit - use comprehensive default prompt
-    var defaultPrompt = 'Run a complete business audit of Camichino. Cover: (1) pricing strategy vs market, (2) occupancy performance and gaps, (3) revenue trends and YTD vs target, (4) review score trajectory toward Superhost 4.8, (5) top 3 action items for this week tagged [URGENT], [THIS WEEK], or [THIS MONTH].';
-    if (ta) ta.value = defaultPrompt;
-    else return;
-  }
-  if (!ta || !ta.value.trim()) return;
-  if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
-  if (out) out.style.display = 'none';
-  if (loading) loading.style.display = 'block';
-
-  // Actualized revenue only (completed stays that have paid out)
-  var pastPayouts = BOOKINGS.filter(function(b) { return b.status === 'past' && b.guest !== 'Camille (Internal)'; })
-    .reduce(function(s,b) { return s + b.payout; }, 0);
-  var ytd = Math.max(pastPayouts, 2897); // 2897 = confirmed actualized YTD
-  var expenses = getBizExp().reduce(function(s,e) { return s + (e.amount||0); }, 0);
-  var cachedPL = null;
-  try { cachedPL = JSON.parse(localStorage.getItem('cam_pl') || 'null'); } catch(e) {}
-
-  var context = 'You are the AI Business Advisor for Camichino, a boutique STR at 118 W 21st Street, Bayonne, NJ.' +
-    '\n\nPROPERTY DATA:' +
-    '\n- Airbnb rating: 4.44/5 (9 reviews) | Check-in: 5.0 | Cleanliness: 4.6' +
-    '\n- YTD revenue: ' + fmt$(ytd) + ' | Expenses: ' + fmt$(expenses) + ' | NOI: ' + fmt$(ytd-expenses) +
-    '\n- Active bookings: ' + BOOKINGS.filter(function(b){return b.status==='confirmed';}).length + ' upcoming' +
-    '\n- Cancellation rate: ' + Math.round((BOOKINGS.filter(function(b){return b.status==='cancelled';}).length / BOOKINGS.filter(function(b){return b.guest!=='Camille (Internal)';}).length)*100) + '%' +
-    '\n- World Cup Jul 18-22: locked at $1,500/night ($7,500 total)' +
-    '\n- PriceLabs: ' + (cachedPL ? 'Base $' + cachedPL.priceBase + ', Occ 30d: ' + cachedPL.yourOcc30 + '% vs ' + cachedPL.mktOcc30 + '% market' : 'Not synced - tap Sync Dashboard') +
-    '\n- Brand: NO discount strategy. Protect ADR at all times.' +
-    '\n\nRespond with structured sections: HEADLINE, METRICS, OPPORTUNITIES, RISKS, ACTION ITEMS (tag each [URGENT]/[THIS WEEK]/[THIS MONTH]).';
-
-  try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', 'x-api-key':ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user', content:context + '\n\nQuestion: ' + ta.value}]})
-    });
-    var d = await res.json();
-    var text = (d.content && d.content[0] && d.content[0].text) || 'No response received.';
-
-    if (out) {
-      out.innerHTML = renderAdvOutput(text);
-      out.style.display = 'block';
-    }
-  } catch(e) {
-    if (out) { out.innerHTML = '<div style="color:var(--taupe)">Error connecting to AI. Please try again.</div>'; out.style.display = 'block'; }
-  }
-  if (loading) loading.style.display = 'none';
-  if (btn) { btn.textContent = 'Run Full Business Audit'; btn.disabled = false; }
-}
-
-// ── BOOT ─────────────────────────────────────
-
-// ── KEEPER DATA (single source of truth) ─────
-var KEEPER_DATA = [{"date":"2026-04-13","description":"Ring AI","category":"Other","amount":5.0,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Amazon","category":"Supplies & Amenities","amount":8.98,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Floor & Decor","category":"Maintenance & Repairs","amount":88.87,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Anthropic","category":"Professional Services","amount":1.13,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Lowe's","category":"Supplies & Amenities","amount":224.38,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Lowe's","category":"Supplies & Amenities","amount":90.76,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Lowe's","category":"Supplies & Amenities","amount":261.75,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Floor & Decor","category":"Maintenance & Repairs","amount":88.87,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Public Service Co.","category":"Utilities","amount":124.97,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-13","description":"Floor & Decor","category":"Maintenance & Repairs","amount":1046.95,"msgId":"19d874a7079cb638","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":149.75,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Walmart","category":"Supplies & Amenities","amount":55.11,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Google Workspace","category":"Professional Services","amount":6.36,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":452.99,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":1090.82,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Google Workspace","category":"Professional Services","amount":13.98,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Lowe's","category":"Supplies & Amenities","amount":261.75,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Meta Platforms","category":"Marketing","amount":25.0,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Amazon","category":"Supplies & Amenities","amount":55.88,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-04-06","description":"Meta Platforms","category":"Marketing","amount":124.97,"msgId":"19d633eea6c1e9e2","source":"keeper"},{"date":"2026-03-30","description":"Creative Market","category":"Professional Services","amount":29.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":99.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":89.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":24.94,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Mail/Telephone Order","category":"Supplies & Amenities","amount":203.25,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Pricelabs","category":"Professional Services","amount":20.99,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-30","description":"Hulu","category":"Other","amount":19.15,"msgId":"19d3f32435d9c25b","source":"keeper"},{"date":"2026-03-23","description":"Spotify","category":"Other","amount":13.84,"msgId":"19d1b25c169860e9","source":"keeper"},{"date":"2026-03-23","description":"Amazon","category":"Supplies & Amenities","amount":173.22,"msgId":"19d1b25c169860e9","source":"keeper"},{"date":"2026-03-23","description":"Anthropic","category":"Professional Services","amount":5.0,"msgId":"19d1b25c169860e9","source":"keeper"},{"date":"2026-03-16","description":"Anthropic","category":"Professional Services","amount":199.94,"msgId":"19cf719b5faf1bca","source":"keeper"},{"date":"2026-03-16","description":"Anthropic","category":"Professional Services","amount":20.0,"msgId":"19cf719b5faf1bca","source":"keeper"},{"date":"2026-03-09","description":"Verizon","category":"Utilities","amount":148.42,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"Water Bill","category":"Utilities","amount":102.26,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"Meta Platforms","category":"Marketing","amount":50.03,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"PSE&G","category":"Utilities","amount":143.87,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-03-09","description":"Google Workspace","category":"Professional Services","amount":9.38,"msgId":"19cd30ca4aa35141","source":"keeper"},{"date":"2026-04-13","description":"Fast-Growing Trees (8x Blue Arrow Juniper)","category":"Maintenance & Repairs","amount":676.88,"msgId":"19d87c5a903cfea4","source":"keeper"}];
-var SEEDED_KEY = 'cam_seeded_v4';
-
-function seedExpenses() {
-  if (localStorage.getItem(SEEDED_KEY)) return;
-  saveBizExp(KEEPER_DATA.slice());
-  localStorage.setItem(SEEDED_KEY, '1');
-}
-
-function syncKeeper() {
-  var btn = el('keeper-btn');
-  var st = el('keeper-st');
-  if (btn) { btn.disabled = true; btn.textContent = 'Syncing...'; }
-  try {
-    var existing = getBizExp();
-    var added = 0;
-    KEEPER_DATA.forEach(function(e) {
-      var dupe = existing.some(function(x) {
-        return x.source === 'keeper' && x.msgId === e.msgId &&
-               x.description === e.description && Math.abs((x.amount||0) - e.amount) < 0.02;
-      });
-      if (!dupe) { existing.unshift(e); added++; }
-    });
-    saveBizExp(existing);
-    renderBizExp();
-    if (btn) { btn.style.background = 'var(--green)'; btn.textContent = added + ' added'; btn.disabled = false; }
-    if (st) st.textContent = added + ' new expenses imported';
-    setTimeout(function() {
-      if (btn) { btn.textContent = 'Sync from Keeper'; btn.style.background = 'var(--ox)'; }
-      if (st) st.textContent = '6 emails · Mar 9 to Apr 13, 2026 · 37 expenses';
-    }, 3000);
-  } catch(err) {
-    if (btn) { btn.textContent = 'Sync from Keeper'; btn.disabled = false; }
-    if (st) st.textContent = 'Sync failed';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
+// ── BOOT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
   initOverview();
   initCal();
   seedExpenses();
@@ -2109,8 +1843,6 @@ document.addEventListener('DOMContentLoaded', function() {
   calcTax();
   setTimeout(masterSync, 2000);
 });
-
-
 
 </script>
 </body>
