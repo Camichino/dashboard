@@ -567,6 +567,12 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="fg"><label class="fl">Amount</label><input type="number" id="biz-amt" placeholder="0.00" step="0.01"></div>
         <button class="btn btn-p" onclick="addBizExp()">+ Add</button>
       </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+        <input type="text" id="biz-note" placeholder="CPA note (optional, e.g. privacy screening for rental unit)..." style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:5px;font-size:12px;color:var(--charcoal);background:var(--surface);outline:none">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--taupe);cursor:pointer;white-space:nowrap;user-select:none"><input type="checkbox" id="biz-direct" style="accent-color:var(--ox);cursor:pointer"> 100% direct</label>
+      </div>
+      <div style="display:none"><!-- spacer close -->
+      </div>
     </div>
     <!-- KPIs -->
     <div class="g4" style="margin-bottom:16px">
