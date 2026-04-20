@@ -1261,13 +1261,11 @@ function updateCalCards() {
     if(b.status==='cancelled'||b.status==='wc') return false;
     return _d(b.ci)<=nmEnd && _d(b.co)>nmStart;
   });
-  // Revenue: use ci-month for attribution (to avoid double-counting)
-  var thisRev=BOOKINGS.filter(function(b){return b.ci.startsWith(prefix)&&b.status!=='cancelled'&&b.status!=='wc';});
-  var nextRev=BOOKINGS.filter(function(b){return b.ci.startsWith(nextPrefix)&&b.status!=='cancelled'&&b.status!=='wc';});
+  // Revenue: count all bookings that overlap the month (same as booking count)
   setText('cal-cm',thisM.length+' bookings');
-  setText('cal-cm-rev',fmt$(thisRev.reduce(function(s,b){return s+b.payout;},0))+' projected');
+  setText('cal-cm-rev',fmt$(thisM.reduce(function(s,b){return s+b.payout;},0))+' projected');
   setText('cal-nm',nextM.length+' bookings');
-  setText('cal-nm-rev',fmt$(nextRev.reduce(function(s,b){return s+b.payout;},0))+' projected');
+  setText('cal-nm-rev',fmt$(nextM.reduce(function(s,b){return s+b.payout;},0))+' projected');
   // Count actual nights occupied in this month (handles cross-month bookings)
   var dIM=new Date(calY,calM+1,0).getDate();
   var monthStart=new Date(calY,calM,1);
