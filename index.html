@@ -1595,8 +1595,19 @@ function showImportPreview(items) {
   window._importedExpenses = items;
   if (tbl) {
     var rows = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:rgba(255,255,255,.06)"><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Date</th><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Description</th><th style="padding:7px 10px;text-align:left;color:var(--taupe);font-size:9px;text-transform:uppercase">Category</th><th style="padding:7px 10px;text-align:right;color:var(--taupe);font-size:9px;text-transform:uppercase">Amount</th></tr></thead><tbody>';
+    var existingExp = getBizExp();
     items.forEach(function(e) {
-      rows += '<tr style="border-top:1px solid rgba(255,255,255,.08)"><td style="padding:7px 10px">' + (e.date||'-') + '</td><td style="padding:7px 10px">' + (e.description||'-') + '</td><td style="padding:7px 10px;font-size:10px">' + (e.category||'-') + '</td><td style="padding:7px 10px;text-align:right">' + fmt$2(e.amount||0) + '</td></tr>';
+      var amt = parseFloat(e.amount || 0);
+      var desc = (e.description || '').toLowerCase().trim();
+      var date = e.date || '';
+      var isDupe = existingExp.some(function(x) {
+        return (x.description || '').toLowerCase().trim() === desc &&
+               Math.abs((x.amount || 0) - amt) < 0.02 &&
+               (x.date || '') === date;
+      });
+      var dupeFlag = isDupe ? '<span style="background:rgba(224,112,112,.2);color:#e07070;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px;font-family:Tenor Sans,sans-serif;letter-spacing:.06em">DUPE</span>' : '';
+      var rowStyle = isDupe ? 'opacity:0.5;' : '';
+      rows += '<tr style="border-top:1px solid rgba(255,255,255,.08);' + rowStyle + '"><td style="padding:7px 10px">' + (e.date||'-') + '</td><td style="padding:7px 10px">' + (e.description||'-') + dupeFlag + '</td><td style="padding:7px 10px;font-size:10px">' + (e.category||'-') + '</td><td style="padding:7px 10px;text-align:right">' + fmt$2(e.amount||0) + '</td></tr>';
     });
     rows += '</tbody></table>';
     tbl.innerHTML = rows;
@@ -1607,12 +1618,34 @@ function showImportPreview(items) {
 function importExpenses() {
   var items = window._importedExpenses || [];
   var existing = getBizExp();
+  var added = 0;
+  var skipped = 0;
   items.forEach(function(e) {
-    existing.unshift({date:e.date||'', description:e.description||'', category:e.category||'Other', amount:parseFloat(e.amount||0)});
+    var amt = parseFloat(e.amount || 0);
+    var desc = (e.description || '').toLowerCase().trim();
+    var date = e.date || '';
+    // Dedup check: same description (case-insensitive) + same amount + same date
+    var isDupe = existing.some(function(x) {
+      return (x.description || '').toLowerCase().trim() === desc &&
+             Math.abs((x.amount || 0) - amt) < 0.02 &&
+             (x.date || '') === date;
+    });
+    if (!isDupe) {
+      existing.unshift({date: date, description: e.description||'', category: e.category||'Other', amount: amt});
+      added++;
+    } else {
+      skipped++;
+    }
   });
   saveBizExp(existing);
   clearImport();
   renderBizExp();
+  // Show result toast
+  var st = el('sync-st');
+  if (skipped > 0 && st) {
+    st.textContent = added + ' imported, ' + skipped + ' duplicate' + (skipped > 1 ? 's' : '') + ' skipped';
+    setTimeout(function() { st.textContent = ''; }, 4000);
+  }
 }
 
 function clearImport() {
