@@ -1797,7 +1797,8 @@ async function masterSync(){
     if(st)st.textContent='Synced just now';
   }catch(e){
     if(btn){btn.textContent='Sync Dashboard';btn.disabled=false;}
-    if(st)st.textContent='Sync failed: '+e.message;
+        if(e.message.indexOf('proxy-unavailable')!==-1){e.message='PriceLabs proxy offline. Redeploy the Apps Script at script.google.com.';}
+    if(st){st.textContent=e.message;st.style.color='var(--ox)';}
   }
 }
 
