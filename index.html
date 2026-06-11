@@ -311,6 +311,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="ni" onclick="go('reviews',this)"><i>★</i> Reviews</button>
     <button class="ni" onclick="go('market',this)"><i>◎</i> Market Intel</button>
     <button class="ni" onclick="go('advisor',this)"><i>◆</i> AI Advisor</button>
+    <div class="sb-div"></div>
+    <button class="ni" onclick="go('sources',this)"><i>❖</i> Sources</button>
   </div>
   <div class="sb-bottom">
     <button id="sync-btn" onclick="masterSync()">↻ Sync Dashboard</button>
@@ -867,6 +869,69 @@ document.addEventListener('DOMContentLoaded', function() {
   <div id="adv-out"></div>
 </div>
 
+<div class="page" id="page-sources">
+  <div class="ph"><div class="ph-title">Booking Sources</div><div class="ph-r">Attribution &amp; Growth</div></div>
+
+  <!-- TRACKED LINKS -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-family:'Tenor Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:4px">Channel Tracking</div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:20px;font-weight:300;color:var(--brown);margin-bottom:6px">Tracked Links</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:300;color:var(--charcoal);line-height:1.6;margin-bottom:16px">One link per channel. Paste a short link from your link shortener into each row to turn on click counts. Until then, copy the row and use it as your canonical destination.</div>
+    <div id="src-links"></div>
+    <button class="btn" style="background:var(--surface);color:var(--brown);border:1px solid var(--border);margin-top:6px" onclick="addSrcLink()">+ Add Channel</button>
+  </div>
+
+  <!-- BOOKING LOG -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-family:'Tenor Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:4px">Attribution Log</div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:20px;font-weight:300;color:var(--brown);margin-bottom:6px">Booking Source Tracker</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:300;color:var(--charcoal);line-height:1.6;margin-bottom:16px">Log each booking with how the guest found you. The check-in question "How did you first come across Camichino" feeds this directly.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <input id="bk-date" type="date" style="padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none">
+      <select id="bk-chan" style="padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none"></select>
+    </div>
+    <input id="bk-stated" type="text" placeholder="Guest's stated source (optional, e.g. found you on Instagram)" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none;margin-bottom:10px">
+    <button class="btn" style="background:var(--ox);color:#fff" onclick="addBooking()">Log Booking</button>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-top:20px;align-items:start">
+      <div id="bk-list"></div>
+      <div><canvas id="src-chart" height="200"></canvas></div>
+    </div>
+  </div>
+
+  <!-- WISHLIST PROMO TRIGGER -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-family:'Tenor Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:4px">Wishlist Lever</div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:20px;font-weight:300;color:var(--brown);margin-bottom:6px">Wishlist Promo Trigger</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:300;color:var(--charcoal);line-height:1.6;margin-bottom:16px">A price drop notifies everyone who wishlisted you. Use it only to fill soft dates sitting unbooked, never on peak weekends or World Cup dates. Check any date before you run a promotion.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:6px;align-items:end">
+      <div><div style="font-family:'Tenor Sans',sans-serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:5px">Start</div><input id="wl-date" type="date" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none"></div>
+      <div><div style="font-family:'Tenor Sans',sans-serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:5px">End (optional)</div><input id="wl-date2" type="date" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none"></div>
+      <button class="btn" style="background:var(--brown);color:#fff;height:43px" onclick="checkPromo()">Check</button>
+    </div>
+    <div id="wl-result" style="margin:12px 0 18px"></div>
+    <div style="font-family:'Tenor Sans',sans-serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:8px">Promotions Run</div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;margin-bottom:10px">
+      <input id="pl-dates" type="text" placeholder="Dates covered" style="padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none">
+      <input id="pl-note" type="text" placeholder="Note (e.g. 8% off, soft midweek)" style="padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:var(--surface);outline:none">
+      <button class="btn" style="background:var(--surface);color:var(--brown);border:1px solid var(--border)" onclick="addPromo()">Add</button>
+    </div>
+    <div id="pl-list"></div>
+  </div>
+
+  <!-- CONTENT PRINCIPLE -->
+  <div class="card" style="margin-bottom:20px;background:var(--surface)">
+    <div style="font-family:'Tenor Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:4px">Principle</div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:20px;font-weight:300;color:var(--brown);margin-bottom:10px">Wishlist conversion is a content problem, not a contact problem</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:300;color:var(--charcoal);line-height:1.7">When a guest has several homes saved, Airbnb now writes an AI comparison that argues each listing's case using highlights, review themes, and differences. You win that argument with content, not outreach. Three levers that move it:
+    <div style="margin-top:12px;line-height:1.9">
+      <div><span style="color:var(--ox)">&#9670;</span> &nbsp;Rich highlights: the forest mural Office, free driveway parking, boutique positioning</div>
+      <div><span style="color:var(--ox)">&#9670;</span> &nbsp;Strong review themes: keep the Guest Favorite push alive so the AI has praise to quote</div>
+      <div><span style="color:var(--ox)">&#9670;</span> &nbsp;Sharp differentiators: the complimentary World Cup transfer to Secaucus Junction</div>
+    </div></div>
+  </div>
+
+</div>
+
 </div><!-- end #main -->
 
 <!-- SYNC TOAST -->
@@ -940,6 +1005,7 @@ function go(id, clickedEl) {
   if (id==='finances') renderBizExp();
   if (id==='reviews') renderReviews();
   if (id==='market') { mktTab('position', el('mt-position')); }
+   if (id==='sources') renderSources();
 }
 
 function toggleMob() { var sb=el('sidebar'); var ov=el('overlay'); if(!sb) return; sb.classList.toggle('open'); if(ov) ov.style.display=sb.classList.contains('open')?'block':'none'; }
@@ -1884,6 +1950,99 @@ document.addEventListener('DOMContentLoaded', function(){
   calcTax();
   setTimeout(masterSync, 2000);
 });
+
+
+/* ===================== SOURCES MODULE ===================== */
+var WORLD_CUP = ['2026-06-13','2026-06-16','2026-06-22','2026-06-25','2026-06-27','2026-06-30','2026-07-05','2026-07-19'];
+function srcDefaults(){return {links:[
+  {id:'igbio',channel:'IG Bio',dest:'https://airbnb.com/h/Camichino',short:''},
+  {id:'igstory',channel:'IG Stories',dest:'https://airbnb.com/h/Camichino',short:''},
+  {id:'mediakit',channel:'Media Kit',dest:'https://airbnb.com/h/Camichino',short:''}
+],bookings:[],promos:[]};}
+function loadSrc(){try{var d=JSON.parse(localStorage.getItem('cam_src')||'null');if(d&&d.links)return d;}catch(e){}return srcDefaults();}
+function saveSrc(d){try{localStorage.setItem('cam_src',JSON.stringify(d));}catch(e){}}
+var SRC = loadSrc();
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderSources(){renderLinks();renderBkChannels();renderBookings();renderPromos();el('wl-result').innerHTML='';}
+
+function renderLinks(){
+  var box=el('src-links');if(!box)return;var h='';
+  SRC.links.forEach(function(l,i){
+    var val=l.short||l.dest;
+    h+='<div style="display:grid;grid-template-columns:120px 1fr auto auto;gap:8px;align-items:center;margin-bottom:8px">'
+      +'<div style="font-family:\'Tenor Sans\',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--brown)">'+esc(l.channel)+'</div>'
+      +'<input value="'+esc(l.short)+'" placeholder="paste short link (optional)" onchange="updateLinkShort('+i+',this.value)" style="padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-family:\'DM Sans\',sans-serif;font-size:12px;color:var(--charcoal);background:var(--surface);outline:none">'
+      +'<button class="btn" style="background:var(--brown);color:#fff;padding:8px 12px" onclick="copyLink(\''+esc(val)+'\',this)">Copy</button>'
+      +'<button class="btn" style="background:transparent;color:var(--taupe);padding:8px 8px;border:1px solid var(--border)" onclick="delSrcLink('+i+')">\u00d7</button>'
+      +'</div>';
+  });
+  box.innerHTML=h;
+}
+function updateLinkShort(i,v){SRC.links[i].short=v.trim();saveSrc(SRC);renderBkChannels();}
+function copyLink(v,btn){var t=btn.textContent;if(navigator.clipboard){navigator.clipboard.writeText(v);}btn.textContent='Copied';setTimeout(function(){btn.textContent=t;},1200);}
+function addSrcLink(){var name=prompt('Channel name (e.g. Collab: Natalie, Pinterest)');if(!name)return;SRC.links.push({id:'c'+Date.now(),channel:name.trim(),dest:'https://airbnb.com/h/Camichino',short:''});saveSrc(SRC);renderLinks();renderBkChannels();}
+function delSrcLink(i){SRC.links.splice(i,1);saveSrc(SRC);renderLinks();renderBkChannels();}
+
+function bkChannelList(){var arr=SRC.links.map(function(l){return l.channel;});['Word of mouth','Repeat guest','Airbnb search','Other'].forEach(function(x){if(arr.indexOf(x)<0)arr.push(x);});return arr;}
+function renderBkChannels(){var sel=el('bk-chan');if(!sel)return;var cur=sel.value;sel.innerHTML=bkChannelList().map(function(c){return '<option>'+esc(c)+'</option>';}).join('');if(cur)sel.value=cur;}
+
+function addBooking(){var d=el('bk-date').value;var c=el('bk-chan').value;var s=el('bk-stated').value.trim();if(!d){alert('Pick a booking date');return;}SRC.bookings.unshift({date:d,channel:c,stated:s});saveSrc(SRC);el('bk-stated').value='';renderBookings();}
+function delBooking(i){SRC.bookings.splice(i,1);saveSrc(SRC);renderBookings();}
+function renderBookings(){
+  var box=el('bk-list');if(!box)return;
+  if(!SRC.bookings.length){box.innerHTML='<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:var(--taupe);padding:14px 0">No bookings logged yet.</div>';drawSrcChart();return;}
+  var h='';
+  SRC.bookings.forEach(function(b,i){
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'
+      +'<div><div style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:var(--charcoal)">'+esc(b.channel)+'</div>'
+      +'<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--taupe);margin-top:2px">'+esc(b.date)+(b.stated?' \u00b7 '+esc(b.stated):'')+'</div></div>'
+      +'<button onclick="delBooking('+i+')" style="background:none;border:none;color:var(--taupe);cursor:pointer;font-size:14px">\u00d7</button>'
+      +'</div>';
+  });
+  box.innerHTML=h;drawSrcChart();
+}
+function drawSrcChart(){
+  var cv=el('src-chart');if(!cv||!window.Chart)return;
+  var counts={};SRC.bookings.forEach(function(b){counts[b.channel]=(counts[b.channel]||0)+1;});
+  var labels=Object.keys(counts),data=labels.map(function(k){return counts[k];});
+  if(window.srcChart){try{window.srcChart.destroy();}catch(e){}}
+  if(!labels.length){return;}
+  var palette=['#490A0A','#473d36','#afa298','#5a7a5a','#c8a96e','#252626','#dad1c0'];
+  window.srcChart=new Chart(cv,{type:'doughnut',data:{labels:labels,datasets:[{data:data,backgroundColor:labels.map(function(_,i){return palette[i%palette.length];}),borderWidth:0}]},options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},color:'#473d36',boxWidth:10,padding:8}}}}});
+}
+
+function dateRange(a,b){var out=[];var s=new Date(a+'T00:00:00');var e=b?new Date(b+'T00:00:00'):new Date(a+'T00:00:00');if(e<s)e=s;for(var d=new Date(s);d<=e;d.setDate(d.getDate()+1)){out.push(d.toISOString().slice(0,10));}return out;}
+function checkPromo(){
+  var a=el('wl-date').value,b=el('wl-date2').value;var box=el('wl-result');
+  if(!a){box.innerHTML='<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:var(--taupe)">Pick a start date.</div>';return;}
+  var days=dateRange(a,b);
+  var hitsWC=days.filter(function(d){return WORLD_CUP.indexOf(d)>=0;});
+  var weekend=days.filter(function(d){var w=new Date(d+'T00:00:00').getDay();return w===5||w===6;});
+  var col,icon,title,msg;
+  if(hitsWC.length){col='var(--ox)';icon='\u25cf';title='Blocked';msg='Overlaps a World Cup match date ('+hitsWC.join(', ')+'). This is peak demand. Hold full price.';}
+  else if(weekend.length){col='var(--warn)';icon='\u25cf';title='Caution';msg='Includes weekend nights ('+weekend.join(', ')+'). Weekends are peak. Run only if these are genuinely soft and unbooked close in.';}
+  else{col='var(--green)';icon='\u25cf';title='Safe to run';msg='No peak or World Cup dates in this range. Good candidate for a wishlist-notifying promotion on soft inventory.';}
+  box.innerHTML='<div style="border:1px solid var(--border);border-left:3px solid '+col+';border-radius:8px;padding:12px 14px;background:#fff">'
+    +'<div style="font-family:\'Tenor Sans\',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+col+';margin-bottom:4px">'+icon+' '+title+'</div>'
+    +'<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:var(--charcoal);line-height:1.6">'+msg+'</div></div>';
+}
+function addPromo(){var d=el('pl-dates').value.trim();var n=el('pl-note').value.trim();if(!d){alert('Enter the dates the promo covered');return;}SRC.promos.unshift({dates:d,note:n,ran:new Date().toISOString().slice(0,10)});saveSrc(SRC);el('pl-dates').value='';el('pl-note').value='';renderPromos();}
+function delPromo(i){SRC.promos.splice(i,1);saveSrc(SRC);renderPromos();}
+function renderPromos(){
+  var box=el('pl-list');if(!box)return;
+  if(!SRC.promos.length){box.innerHTML='<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:var(--taupe);padding:8px 0">No promotions logged yet.</div>';return;}
+  var h='';
+  SRC.promos.forEach(function(p,i){
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">'
+      +'<div><div style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:var(--charcoal)">'+esc(p.dates)+'</div>'
+      +'<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--taupe);margin-top:2px">'+(p.note?esc(p.note)+' \u00b7 ':'')+'logged '+esc(p.ran)+'</div></div>'
+      +'<button onclick="delPromo('+i+')" style="background:none;border:none;color:var(--taupe);cursor:pointer;font-size:14px">\u00d7</button>'
+      +'</div>';
+  });
+  box.innerHTML=h;
+}
+/* =================== END SOURCES MODULE =================== */
 
 </script>
 </body>
