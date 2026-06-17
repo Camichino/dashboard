@@ -394,15 +394,15 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="badge bg">✓ Received</div>
     </div>
     <div class="card">
-      <div class="cl">Mar Occupancy</div>
+      <div class="cl">Occupancy (30d)</div>
       <div class="cv green" data-live="your-occ-30" id="kpi-occ">61%</div>
       <div class="cs">vs <span data-live="mkt-occ-30">26%</span> market</div>
-      <div class="badge bg">↑ Outperforming</div>
+      <div class="badge bg" id="kpi-occ-badge">↑ Outperforming</div>
     </div>
     <div class="card">
-      <div class="cl">Blended ADR</div>
-      <div class="cv">$192</div>
-      <div class="cs">Floor $195 · Base $250</div>
+      <div class="cl">Current Base Rate</div>
+      <div class="cv" data-live="price-base">$192</div>
+      <div class="cs">Floor <span data-live="price-floor">$195</span> · Rec <span data-live="rec-base">$247</span></div>
       <div class="badge bw" id="kpi-rec-base">Rec: $247</div>
     </div>
     <div class="card" style="border-left:3px solid var(--ox)">
@@ -1874,6 +1874,13 @@ function applyPL(pl){
   setText('m-d7',(d7>=0?'+':'')+d7+'pts'); setText('m-d30',(d30>=0?'+':'')+d30+'pts'); setText('m-d60',(d60>=0?'+':'')+d60+'pts');
   setText('m-lead7',(d7>=0?'+':'')+d7); setText('m-lead30',(d30>=0?'+':'')+d30); setText('m-lead60',(d60>=0?'+':'')+d60);
   setText('perf-delta',(d30>=0?'+':'')+d30+' pts'); setText('kpi-rec-base','Rec: $'+pl.recBase);
+  var occBadge=el('kpi-occ-badge');
+  if(occBadge){
+    if(d30>=10){occBadge.textContent='↑ Outperforming +'+d30+'pts'; occBadge.className='badge bg';}
+    else if(d30>0){occBadge.textContent='↑ Above market +'+d30+'pts'; occBadge.className='badge bg';}
+    else if(d30===0){occBadge.textContent='= Matching market'; occBadge.className='badge bw';}
+    else{occBadge.textContent='↓ Below market '+d30+'pts'; occBadge.className='badge br';}
+  }
   var v=pl.priceBase-pl.recBase;
   var varEl=el('m-variance');if(varEl){varEl.textContent='Variance: '+(v>=0?'+':'')+v;varEl.style.color=Math.abs(v)<=10?'#6ab88a':'var(--gold)';}
   var ts=new Date(pl.lastPushed||Date.now()).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
