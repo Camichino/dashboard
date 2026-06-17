@@ -950,8 +950,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ═══════════════════════════════════════════════════════════════
 
 // ── CONSTANTS ────────────────────────────────────────────────
-const ANTHROPIC_KEY = ['sk-ant-api03-gQ4_F3_oJI1PkTW2Oxy2F1Xjyqw','MHsEEiZspX5Lqkx8r0h12bClhyzb0PXNrLNrfRYLT0L74AruCa0','-v7lRMEg-hTunDAAA'].join('');
-const PL_PROXY = 'https://script.google.com/macros/s/AKfycby7eMx_G4Cya8Oox1phhDLxmKAEa35WngGeBRicxi8C7WAibCDQkpgM0CTxjIFHnaCq/exec';
+// Anthropic key removed - now lives server-side in Apps Script Properties
+const PL_PROXY = 'https://script.google.com/macros/s/AKfycbww7hGs9Ib7ZOPNX1Vsx5lpaOHJLpXqldtKqxgb3qc1dLsTgLmSYy9YyiZ5hO2PoTmKTA/exec';
 const LISTING_ID = '1433459913839406287';
 
 // ── BOOKINGS ─────────────────────────────────────────────────
@@ -1276,7 +1276,7 @@ async function suggestTasks() {
     ' Suggest exactly 3 specific actionable tasks for Camille today, under 55 chars each, tied to real data.'+
     ' Return ONLY a JSON array: [{title,sub,tag,label}]. tag: tu/tg/tf/to. label: Urgent/Growth/Finance/Task.';
   try {
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
     var d=await res.json();
     var text=(d.content&&d.content[0]&&d.content[0].text)||'[]';
     var suggestions=JSON.parse(text.replace(/```json|```/g,'').trim());
@@ -1731,7 +1731,7 @@ function parseWithAI(content,isImage,fileType){
   } else {
     messages=[{role:'user',content:'Extract expenses from this text. Return ONLY JSON array: [{date,description,category,amount}]. Categories: Platform Fees, Cleaning & Turnover, Utilities, Insurance, Maintenance & Repairs, Furniture & Furnishings, Marketing, Professional Services, Supplies & Amenities, Mortgage Interest, Property Tax, Other. No other text.\n\n'+content.slice(0,8000)}];
   }
-  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:messages})})
+  fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:messages})})
   .then(function(r){return r.json();}).then(function(data){
     var text=(data.content&&data.content[0]&&data.content[0].text)||'[]';
     try{
@@ -1829,7 +1829,7 @@ function showToast(pl,briefing){
 
 async function getBriefing(pl){
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:'Camichino STR synced. 2 sentences max. Status + top action. Occ 7d: '+pl.yourOcc7+'% vs '+pl.mktOcc7+'% market. 30d: '+pl.yourOcc30+'% vs '+pl.mktOcc30+'%. Rec $'+pl.recBase+', current $'+pl.priceBase+'. Be direct.'}]})});
+    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:'Camichino STR synced. 2 sentences max. Status + top action. Occ 7d: '+pl.yourOcc7+'% vs '+pl.mktOcc7+'% market. 30d: '+pl.yourOcc30+'% vs '+pl.mktOcc30+'%. Rec $'+pl.recBase+', current $'+pl.priceBase+'. Be direct.'}]})});
     var d=await res.json();return(d.content&&d.content[0]&&d.content[0].text)||'';
   }catch(e){return '';}
 }
@@ -1839,7 +1839,7 @@ async function masterSync(){
   if(btn){btn.disabled=true;btn.textContent='Syncing...';}
   try{
     if(st)st.textContent='Fetching PriceLabs...';
-    var res=await fetch(PL_PROXY+'?listing_id='+LISTING_ID,{redirect:'follow'});
+    var res=await fetch(PL_PROXY+'?action=pricelabs&listing_id='+LISTING_ID,{redirect:'follow'});
     if(!res.ok) throw new Error('PriceLabs '+res.status);
     var data=await res.json();
     var l=data.listings&&data.listings[0];
@@ -1896,7 +1896,7 @@ async function runAdv(presetText){
     '\n- Brand: NO discounting. Protect ADR at all times.'+
     '\n\nFormat response with sections: HEADLINE, METRICS, OPPORTUNITIES, RISKS, ACTION ITEMS (tag [URGENT]/[THIS WEEK]/[THIS MONTH]).';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:context+'\n\nQuestion: '+ta.value}]})});
+    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:context+'\n\nQuestion: '+ta.value}]})});
     var d=await res.json();
     var text=(d.content&&d.content[0]&&d.content[0].text)||'No response received.';
     if(out){out.innerHTML=renderAdvOutput(text);out.style.display='block';}
