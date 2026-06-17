@@ -973,11 +973,36 @@ async function hydrateLive() {
     if (Array.isArray(py)) {
       PAYOUTS = py;
     }
+    try { matchPayouts(); } catch(e) { console.error('matchPayouts', e); }
     if (typeof initOverview === 'function') try { initOverview(); } catch(e) { console.error(e); }
     if (typeof updateRevenueKPIs === 'function') try { updateRevenueKPIs(); } catch(e) {}
   } catch (e) {
     console.error('hydrateLive failed:', e);
   }
+}
+
+// Match each PAYOUT to its nearest booking by check-in date.
+// Airbnb pays out ~24-48 hours after check-in.
+function matchPayouts() {
+  if (!Array.isArray(PAYOUTS) || !PAYOUTS.length || !BOOKINGS.length) return;
+  BOOKINGS.forEach(function(b){ b.payout = 0; });
+  var pays = PAYOUTS.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  pays.forEach(function(p){
+    if (!p.date) return;
+    var pTime = new Date(p.date).getTime();
+    var best = null;
+    var bestDiff = Infinity;
+    BOOKINGS.forEach(function(b){
+      if (b.payout || !b.ci) return;
+      var bTime = new Date(b.ci).getTime();
+      var diff = Math.abs((pTime - bTime) / 86400000);
+      if (diff < bestDiff && diff <= 14) {
+        bestDiff = diff;
+        best = b;
+      }
+    });
+    if (best) best.payout = p.amount;
+  });
 }
 
 // Compute revenue from PAYOUTS and update KPI displays
@@ -1204,14 +1229,9 @@ function renderPlan() {
 
 
 // ── FOCUS BOARD ───────────────────────────────────────────────
-var FOCUS_KEY = 'cam_focus_v3';
+var FOCUS_KEY = 'cam_focus_list_v3'; // v3 - reset Jun 17 to clear stale defaults
 var ARCHIVE_KEY = 'cam_archive_v1';
-var DEFAULT_FOCUS = [
-  {id:'f1',title:'Switch to Strict cancellation policy',sub:'26% rate - Airbnb > Policies',tag:'tu',label:'Urgent',done:false},
-  {id:'f2',title:'Review May-Jun occupancy gaps',sub:'Fill open windows before season peak',tag:'tg',label:'Growth',done:false},
-  {id:'f3',title:'Add Home Depot + Lowes receipt amounts',sub:'Two receipts pending from Apr 18-19',tag:'tf',label:'Finance',done:false},
-  {id:'f4',title:'Check on Javier Rodriguez',sub:'In house Apr 18-24 - 5-star priority',tag:'tu',label:'Urgent',done:false},
-];
+var DEFAULT_FOCUS = []; // Reset Jun 17 - users add their own contextual tasks
 
 function getFocus() {
   try {
