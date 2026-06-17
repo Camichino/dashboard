@@ -951,14 +951,17 @@ async function hydrateLive() {
     var bookingsURL = PL_PROXY + '?action=bookings&days=120';
     var payoutsURL  = PL_PROXY + '?action=payouts&days=180';
     var cancelURL   = PL_PROXY + '?action=cancellations&days=180';
+    var reviewsURL  = PL_PROXY + '?action=reviews&days=365';
     var results = await Promise.all([
       fetch(bookingsURL, {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(payoutsURL,  {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
-      fetch(cancelURL,   {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;})
+      fetch(cancelURL,   {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(reviewsURL,  {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;})
     ]);
     var bk = results[0];
     var py = results[1];
     var cn = results[2];
+    var rv = results[3];
     if (Array.isArray(bk) && bk.length) {
       BOOKINGS.length = 0;
       bk.forEach(function(b){ BOOKINGS.push(b); });
@@ -968,6 +971,41 @@ async function hydrateLive() {
     }
     if (Array.isArray(cn)) {
       CANCELLATIONS = cn;
+    }
+    if (Array.isArray(rv)) {
+      // Filter to received reviews only; transform to dashboard REVIEWS shape
+      var receivedReviews = rv.filter(function(x){ return x.type === 'received'; });
+      var pendingReviews = rv.filter(function(x){ return x.type === 'pending'; });
+      window.PENDING_REVIEWS = pendingReviews;
+      // Dedupe received by guest base name (strip "'s group" etc.)
+      var seenGuests = {};
+      var cleanedReceived = [];
+      receivedReviews.forEach(function(r){
+        var base = r.guest.replace(/[’‘']s\s+group$/, '').replace(/'s\s+group$/, '').trim().toLowerCase();
+        if (seenGuests[base]) return;
+        seenGuests[base] = true;
+        cleanedReceived.push(r);
+      });
+      REVIEWS.length = 0;
+      cleanedReceived.forEach(function(r){
+        var nice = r.date;
+        try {
+          var dt = new Date(r.date + 'T12:00:00');
+          if (!isNaN(dt.getTime())) {
+            nice = dt.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+          }
+        } catch(_) {}
+        REVIEWS.push({
+          guest: r.guest.replace(/[’‘']s\s+group$/, '').replace(/'s\s+group$/, '').trim(),
+          loc: '',
+          date: nice,
+          nights: 0,
+          stars: r.stars || 5,
+          body: r.snippet || '',
+          tags: []
+        });
+      });
+      try { if (typeof renderReviews === 'function') renderReviews(); } catch(e){}
     }
     try { matchPayouts(); } catch(e) { console.error('matchPayouts', e); }
     if (typeof initOverview === 'function') try { initOverview(); } catch(e) { console.error(e); }
