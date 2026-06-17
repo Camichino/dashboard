@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="tpc"><div class="tpc-l">Check-ins</div><div class="tpc-v" id="ov-ci">—</div></div>
       <div class="tpc"><div class="tpc-l">Check-outs</div><div class="tpc-v" id="ov-co">—</div></div>
       <div class="tpc"><div class="tpc-l">In House</div><div class="tpc-v" id="ov-ih">—</div></div>
-      <div class="tpc"><div class="tpc-l">March Rev</div><div class="tpc-v gr">$4,676</div></div>
+      <div class="tpc"><div class="tpc-l" id="kpi-mtd-label">Mar Rev</div><div class="tpc-v gr" id="kpi-mtd">$4,676</div></div>
       <div class="tpc">
         <div class="tpc-l">Reserve Fund</div>
         <div class="tpc-v gd" id="ov-reserve">—</div>
@@ -389,8 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="g4" style="margin-bottom:18px">
     <div class="card" style="border-left:3px solid var(--green)">
       <div class="cl">Actualized Revenue</div>
-      <div class="cv green">$2,897</div>
-      <div class="cs">7 payouts confirmed</div>
+      <div class="cv green" id="kpi-actrev">$2,897</div>
+      <div class="cs" id="kpi-actrev-sub">7 payouts confirmed</div>
       <div class="badge bg">✓ Received</div>
     </div>
     <div class="card">
@@ -953,6 +953,57 @@ document.addEventListener('DOMContentLoaded', function() {
 // Anthropic key removed - now lives server-side in Apps Script Properties
 const PL_PROXY = 'https://script.google.com/macros/s/AKfycbww7hGs9Ib7ZOPNX1Vsx5lpaOHJLpXqldtKqxgb3qc1dLsTgLmSYy9YyiZ5hO2PoTmKTA/exec';
 const LISTING_ID = '1433459913839406287';
+var PAYOUTS = [];
+
+// Hydrate BOOKINGS + PAYOUTS from Apps Script proxy
+async function hydrateLive() {
+  try {
+    var bookingsURL = PL_PROXY + '?action=bookings&days=120';
+    var payoutsURL  = PL_PROXY + '?action=payouts&days=180';
+    var results = await Promise.all([
+      fetch(bookingsURL, {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(payoutsURL,  {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;})
+    ]);
+    var bk = results[0];
+    var py = results[1];
+    if (Array.isArray(bk) && bk.length) {
+      BOOKINGS.length = 0;
+      bk.forEach(function(b){ BOOKINGS.push(b); });
+    }
+    if (Array.isArray(py)) {
+      PAYOUTS = py;
+    }
+    if (typeof initOverview === 'function') try { initOverview(); } catch(e) { console.error(e); }
+    if (typeof updateRevenueKPIs === 'function') try { updateRevenueKPIs(); } catch(e) {}
+  } catch (e) {
+    console.error('hydrateLive failed:', e);
+  }
+}
+
+// Compute revenue from PAYOUTS and update KPI displays
+function updateRevenueKPIs() {
+  if (!Array.isArray(PAYOUTS) || !PAYOUTS.length) return;
+  var ytd = PAYOUTS.filter(function(p){ return p.date && p.date.startsWith('2026'); }).reduce(function(s,p){ return s + (p.amount||0); }, 0);
+  var now = new Date();
+  var monthPrefix = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0');
+  var mtd = PAYOUTS.filter(function(p){ return p.date && p.date.startsWith(monthPrefix); }).reduce(function(s,p){ return s + (p.amount||0); }, 0);
+  var fmt = function(n){ return '$' + Math.round(n).toLocaleString(); };
+  var monthAbbr = now.toLocaleDateString('en-US', {month:'short'});
+  ['kpi-actrev', 'kpi-actrev2', 'tax-gross', 'kpi-mtd'].forEach(function(id){
+    var elx = document.getElementById(id);
+    if (!elx) return;
+    if (id === 'kpi-mtd') {
+      elx.textContent = fmt(mtd);
+    } else {
+      elx.textContent = fmt(ytd);
+    }
+  });
+  var subEl = document.getElementById('kpi-actrev-sub');
+  if (subEl) subEl.textContent = PAYOUTS.length + ' payouts confirmed YTD';
+  var mthLabel = document.getElementById('kpi-mtd-label');
+  if (mthLabel) mthLabel.textContent = monthAbbr + ' Rev';
+}
+
 
 // ── BOOKINGS ─────────────────────────────────────────────────
 // Today is April 20, 2026. Javier is IN HOUSE (Apr 18–24).
@@ -1085,8 +1136,14 @@ function initOverview() {
   // MTD revenue — this month's actualized
   var now2 = new Date();
   var monthPrefix = now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0');
-  var mthRevBookings = BOOKINGS.filter(function(b){ return (b.status==='past'||b.status==='current') && b.ci.startsWith(monthPrefix) && b.guest!=='Camille (Internal)'; });
-  var mthRev = mthRevBookings.reduce(function(s,b){ return s+b.payout; },0);
+  // Use PAYOUTS (real payment data from Gmail) if available, fall back to BOOKINGS payouts
+  var mthRev = 0;
+  if (Array.isArray(PAYOUTS) && PAYOUTS.length) {
+    mthRev = PAYOUTS.filter(function(p){ return p.date && p.date.startsWith(monthPrefix); }).reduce(function(s,p){ return s + (p.amount||0); }, 0);
+  } else {
+    var mthRevBookings = BOOKINGS.filter(function(b){ return (b.status==='past'||b.status==='current') && b.ci.startsWith(monthPrefix) && b.guest!=='Camille (Internal)'; });
+    mthRev = mthRevBookings.reduce(function(s,b){ return s+b.payout; },0);
+  }
   var mthLabel = now2.toLocaleDateString('en-US',{month:'long'}).toUpperCase()+' REV';
   setText('ov-rev-label', mthLabel);
   setText('ov-rev', fmt$(mthRev));
@@ -1835,6 +1892,8 @@ async function getBriefing(pl){
 }
 
 async function masterSync(){
+  // Refresh BOOKINGS + PAYOUTS in background
+  hydrateLive();
   var btn=el('sync-btn');var st=el('sync-st');
   if(btn){btn.disabled=true;btn.textContent='Syncing...';}
   try{
@@ -1944,6 +2003,8 @@ function renderAdvOutput(text){
 // ── BOOT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function(){
   initOverview();
+  // Fetch live bookings + payouts in background
+  hydrateLive();
   initCal();
   seedExpenses();
   loadCachedPL();
