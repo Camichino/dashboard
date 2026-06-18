@@ -724,8 +724,8 @@ document.addEventListener('DOMContentLoaded', function() {
       <div style="font-size:11px;color:var(--taupe)" id="rv-count">6 reviews · 2026</div>
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
         <div style="font-family:'Tenor Sans',sans-serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:5px">Superhost Target</div>
-        <div class="pbar"><div class="pfill gold" style="width:54%"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--taupe);margin-top:4px"><span>4.33</span><span>4.8 needed</span></div>
+        <div class="pbar"><div class="pfill gold" id="superhost-bar" style="width:54%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--taupe);margin-top:4px"><span id="superhost-current">4.33</span><span>4.8 needed</span></div>
       </div>
     </div>
     <div>
@@ -1641,6 +1641,12 @@ function renderReviews() {
   var den = Math.max(REVIEWS.length, 1);
   setText('rv-5star',Math.round((fiveStar/den)*100)+'%');
   setText('rv-5star-s',fiveStar+' of '+REVIEWS.length+' parsed from Gmail');
+  // Superhost progress bar — scale relative to 4.0..4.8 target
+  setText('superhost-current', AIRBNB_OFFICIAL_RATING.toFixed(2));
+  var pct = Math.round(((AIRBNB_OFFICIAL_RATING - 4.0) / (4.8 - 4.0)) * 100);
+  pct = Math.max(0, Math.min(100, pct));
+  var bar = el('superhost-bar');
+  if (bar) bar.style.width = pct + '%';
   var html='';
   REVIEWS.forEach(function(r){
     var stars='★'.repeat(r.stars)+'☆'.repeat(5-r.stars);
@@ -1648,7 +1654,7 @@ function renderReviews() {
     var borderColor=r.stars>=4?'var(--green)':r.stars===1?'var(--ox)':'var(--taupe)';
     var badgeCls=r.stars>=4?'bg':r.stars===1?'br':'bw';
     html+='<div class="rv" style="border-left:3px solid '+borderColor+'">';
-    html+='<div class="rv-h"><div><div class="rv-name">'+r.guest+'</div><div class="rv-date">'+(r.loc?r.loc+' - ':'')+r.date+' - '+r.nights+'n</div></div>';
+    html+='<div class="rv-h"><div><div class="rv-name">'+r.guest+'</div><div class="rv-date">'+(r.loc?r.loc+' - ':'')+r.date+(r.nights>0?' · '+r.nights+'n':'')+'</div></div>';
     html+='<div style="text-align:right"><div class="rv-stars" style="color:'+starColor+'">'+stars+'</div><div class="badge '+badgeCls+'" style="margin-top:4px">'+r.stars+' star'+(r.stars!==1?'s':'')+'</div></div></div>';
     if(r.body) html+='<div class="rv-body">'+r.body+'</div>';
     if(r.tags&&r.tags.length){ html+='<div class="rv-tags">'; r.tags.forEach(function(t){html+='<div class="rv-tag">'+t+'</div>';}); html+='</div>'; }
