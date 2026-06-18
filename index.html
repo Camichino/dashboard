@@ -1452,7 +1452,7 @@ async function suggestTasks() {
     ' Suggest exactly 3 specific actionable tasks for Camille today, under 55 chars each, tied to real data.'+
     ' Return ONLY a JSON array: [{title,sub,tag,label}]. tag: tu/tg/tf/to. label: Urgent/Growth/Finance/Task.';
   try {
-    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:prompt}]})});
     var d=await res.json();
     var text=(d.content&&d.content[0]&&d.content[0].text)||'[]';
     var suggestions=JSON.parse(text.replace(/```json|```/g,'').trim());
@@ -1657,10 +1657,20 @@ function calcPerf() {
   if(compBar) compBar.style.width=(100-cancelRate)+'%';
   if(cancBar) cancBar.style.width=cancelRate+'%';
   if(lostBar) lostBar.style.width=Math.min(100,(lostRev/10000)*100)+'%';
-  // Avg booking window
+  // Avg booking window — only show if data available; otherwise be honest
   var withDates=confirmed.filter(function(b){return b.bookedDate&&b.ci;});
-  setText('perf-abw',withDates.length?'—':'46 days');
-  setText('perf-abw-sub','Days from booking to check-in');
+  if (withDates.length) {
+    var totalLead = 0;
+    withDates.forEach(function(b){
+      var lead = (new Date(b.ci) - new Date(b.bookedDate)) / 86400000;
+      if (lead >= 0) totalLead += lead;
+    });
+    setText('perf-abw', Math.round(totalLead / withDates.length) + ' days');
+    setText('perf-abw-sub','Days from booking to check-in');
+  } else {
+    setText('perf-abw','—');
+    setText('perf-abw-sub','Booking dates not yet tracked');
+  }
 }
 
 var chartsInit=false;
@@ -2009,7 +2019,7 @@ function parseWithAI(content,isImage,fileType){
   } else {
     messages=[{role:'user',content:'Extract expenses from this text. Return ONLY JSON array: [{date,description,category,amount}]. Categories: Platform Fees, Cleaning & Turnover, Utilities, Insurance, Maintenance & Repairs, Furniture & Furnishings, Marketing, Professional Services, Supplies & Amenities, Mortgage Interest, Property Tax, Other. No other text.\n\n'+content.slice(0,8000)}];
   }
-  fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:messages})})
+  fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:messages})})
   .then(function(r){return r.json();}).then(function(data){
     var text=(data.content&&data.content[0]&&data.content[0].text)||'[]';
     try{
@@ -2114,7 +2124,7 @@ function showToast(pl,briefing){
 
 async function getBriefing(pl){
   try{
-    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:'Camichino STR synced. 2 sentences max. Status + top action. Occ 7d: '+pl.yourOcc7+'% vs '+pl.mktOcc7+'% market. 30d: '+pl.yourOcc30+'% vs '+pl.mktOcc30+'%. Rec $'+pl.recBase+', current $'+pl.priceBase+'. Be direct.'}]})});
+    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:'Camichino STR synced. 2 sentences max. Status + top action. Occ 7d: '+pl.yourOcc7+'% vs '+pl.mktOcc7+'% market. 30d: '+pl.yourOcc30+'% vs '+pl.mktOcc30+'%. Rec $'+pl.recBase+', current $'+pl.priceBase+'. Be direct.'}]})});
     var d=await res.json();return(d.content&&d.content[0]&&d.content[0].text)||'';
   }catch(e){return '';}
 }
@@ -2183,7 +2193,7 @@ async function runAdv(presetText){
     '\n- Brand: NO discounting. Protect ADR at all times.'+
     '\n\nFormat response with sections: HEADLINE, METRICS, OPPORTUNITIES, RISKS, ACTION ITEMS (tag [URGENT]/[THIS WEEK]/[THIS MONTH]).';
   try{
-    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:context+'\n\nQuestion: '+ta.value}]})});
+    var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:context+'\n\nQuestion: '+ta.value}]})});
     var d=await res.json();
     var text=(d.content&&d.content[0]&&d.content[0].text)||'No response received.';
     if(out){out.innerHTML=renderAdvOutput(text);out.style.display='block';}
