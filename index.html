@@ -2178,19 +2178,37 @@ async function runAdv(presetText){
   if(!ta||!ta.value.trim()) return;
   if(btn){btn.disabled=true;btn.textContent='Analyzing...';}
   if(out)out.style.display='none';if(loading)loading.style.display='block';
-  var ytd=Math.max(BOOKINGS.filter(function(b){return b.status==='past'&&b.guest!=='Camille (Internal)';}).reduce(function(s,b){return s+b.payout;},0),2897);
-  var expenses=getBizExp().reduce(function(s,e){return s+(e.amount||0);},0);
-  var current=BOOKINGS.filter(function(b){return b.status==='current';});
-  var cachedPL=null;try{cachedPL=JSON.parse(localStorage.getItem('cam_pl')||'null');}catch(e){}
-  var context='You are the AI Business Advisor for Camichino, boutique STR at 118 W 21st Street, Bayonne, NJ.'+
-    '\n\nPROPERTY DATA (today is April 20, 2026):'+
-    '\n- Airbnb rating: 4.44/5 (9 reviews) | Superhost target: 4.8'+
-    '\n- Current guest: '+(current.length?current[0].guest+' (checkout Apr 24)':'none')+
-    '\n- YTD actualized revenue: '+fmt$(ytd)+' | Expenses: '+fmt$(expenses)+' | NOI: '+fmt$(ytd-expenses)+
-    '\n- Cancellation rate: 26% (high - policy review needed)'+
-    '\n- World Cup Jul 18-23: locked at $1,500/night ($7,500 total)'+
-    '\n- PriceLabs: '+(cachedPL?'Base $'+cachedPL.priceBase+', Rec $'+cachedPL.recBase+', Occ 30d: '+cachedPL.yourOcc30+'% vs '+cachedPL.mktOcc30+'% market':'tap Sync for live data')+
-    '\n- Brand: NO discounting. Protect ADR at all times.'+
+  // Build dynamic context from live data
+  var now = new Date();
+  var todayStr = now.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
+  var ytdPayouts = Array.isArray(PAYOUTS) ? PAYOUTS.filter(function(p){ return p.date && p.date.startsWith(now.getFullYear()+''); }).reduce(function(s,p){ return s + (p.amount||0); }, 0) : 0;
+  var ytd = ytdPayouts || BOOKINGS.filter(function(b){return b.status==='past'&&b.guest!=='Camille (Internal)';}).reduce(function(s,b){return s+(b.payout||0);},0);
+  var expenses = getBizExp().reduce(function(s,e){return s+(e.amount||0);},0);
+  var current = BOOKINGS.filter(function(b){return b.status==='current';});
+  var confirmedCount = BOOKINGS.filter(function(b){return b.status!=='cancelled'&&b.guest!=='Camille (Internal)';}).length;
+  var cancCount = Array.isArray(CANCELLATIONS) ? CANCELLATIONS.length : 0;
+  var cancelRate = (confirmedCount + cancCount) ? Math.round((cancCount / (confirmedCount + cancCount)) * 100) : 0;
+  var upcoming = BOOKINGS.filter(function(b){return b.status==='confirmed';}).slice(0, 5);
+  var cachedPL = null; try { cachedPL = JSON.parse(localStorage.getItem('cam_pl') || 'null'); } catch(e) {}
+
+  // Streak from REVIEWS array (already sorted by date desc)
+  var liveStreak = 0;
+  for (var iStreak = 0; iStreak < REVIEWS.length; iStreak++) {
+    if (REVIEWS[iStreak].stars === 5) liveStreak++;
+    else break;
+  }
+
+  var context = 'You are the AI Business Advisor for Camichino, a boutique short-term rental at 118 W 21st Street, Bayonne, NJ.' +
+    '\n\nPROPERTY DATA (today is ' + todayStr + '):' +
+    '\n- Airbnb rating: ' + AIRBNB_OFFICIAL_RATING.toFixed(2) + '/5 (' + AIRBNB_OFFICIAL_COUNT + ' reviews) | Superhost target: 4.8 | Guest Favorite target: 4.9' +
+    '\n- Category ratings: Check-in ' + AIRBNB_CATEGORIES.checkin + ', Cleanliness ' + AIRBNB_CATEGORIES.cleanliness + ', Accuracy ' + AIRBNB_CATEGORIES.accuracy + ', Communication ' + AIRBNB_CATEGORIES.communication + ', Location ' + AIRBNB_CATEGORIES.location + ', Value ' + AIRBNB_CATEGORIES.value +
+    '\n- 5-star streak: ' + liveStreak + ' consecutive | Hosting tenure: ' + AIRBNB_HOSTING_MONTHS + ' months' +
+    '\n- Current guest: ' + (current.length ? current[0].guest + ' (checkout ' + current[0].co + ')' : 'none') +
+    '\n- Upcoming bookings: ' + (upcoming.length ? upcoming.map(function(b){return b.guest+' '+b.ci;}).join('; ') : 'none scheduled') +
+    '\n- YTD actualized revenue: ' + fmt$(ytd) + ' | Business expenses: ' + fmt$(expenses) + ' | NOI: ' + fmt$(ytd-expenses) +
+    '\n- Total confirmed bookings YTD: ' + confirmedCount + ' | Cancellations: ' + cancCount + ' | Cancellation rate: ' + cancelRate + '%' +
+    '\n- PriceLabs: ' + (cachedPL ? 'Base $' + cachedPL.priceBase + ', Rec $' + cachedPL.recBase + ', Occ 30d: ' + cachedPL.yourOcc30 + '% vs ' + cachedPL.mktOcc30 + '% market' : 'tap Sync for live data') +
+    '\n- Brand: NO discounting. Protect ADR at all times.' +
     '\n\nFormat response with sections: HEADLINE, METRICS, OPPORTUNITIES, RISKS, ACTION ITEMS (tag [URGENT]/[THIS WEEK]/[THIS MONTH]).';
   try{
     var res=await fetch(PL_PROXY+'?action=anthropic',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:context+'\n\nQuestion: '+ta.value}]})});
