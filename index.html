@@ -1625,15 +1625,22 @@ var REVIEWS = [
   {guest:'Kendal Brame',        loc:'',               date:'Mar 25-28',nights:3, stars:5, body:'Beautiful space, incredible design. Felt like a boutique hotel.', tags:['Looked like the photos','Pristine kitchen']},
 ];
 
+// Override with official Airbnb rating. Update monthly or wire to scraper later.
+var AIRBNB_OFFICIAL_RATING = 4.69;
+var AIRBNB_OFFICIAL_COUNT = 16;
+
 function renderReviews() {
   var feed=el('reviews-feed'); if(!feed) return;
-  var totalStars=REVIEWS.reduce(function(s,r){return s+r.stars;},0);
-  var avg=(totalStars/REVIEWS.length).toFixed(2);
+  // Use official Airbnb stats (Gmail-derived was overcounting 5-stars)
+  var avg = AIRBNB_OFFICIAL_RATING.toFixed(2);
+  var officialCount = AIRBNB_OFFICIAL_COUNT;
   var fiveStar=REVIEWS.filter(function(r){return r.stars===5;}).length;
   setText('rv-score',avg);
-  setText('rv-count',REVIEWS.length+' reviews - 2026');
-  setText('rv-5star',Math.round((fiveStar/REVIEWS.length)*100)+'%');
-  setText('rv-5star-s',fiveStar+' of '+REVIEWS.length+' reviews');
+  setText('rv-count',officialCount+' reviews · official Airbnb');
+  // 5-star rate based on what we see; cap denominator at REVIEWS.length so it's accurate to what's shown
+  var den = Math.max(REVIEWS.length, 1);
+  setText('rv-5star',Math.round((fiveStar/den)*100)+'%');
+  setText('rv-5star-s',fiveStar+' of '+REVIEWS.length+' parsed from Gmail');
   var html='';
   REVIEWS.forEach(function(r){
     var stars='★'.repeat(r.stars)+'☆'.repeat(5-r.stars);
