@@ -1673,19 +1673,51 @@ function calcPerf() {
   }
 }
 
-var chartsInit=false;
 function initCharts() {
-  if(chartsInit||!window.Chart) return;
-  chartsInit=true;
-  var byMonth={};
-  BOOKINGS.filter(function(b){return b.status!=='cancelled';}).forEach(function(b){
-    var m=_d(b.ci).getMonth(); byMonth[m]=(byMonth[m]||0)+b.payout;
-  });
+  if(!window.Chart) return;
+  function destroy(id){ var c=el(id); if(c && window.Chart.getChart){var ex=window.Chart.getChart(c); if(ex) ex.destroy();} }
+  destroy('chartRev'); destroy('chartOcc'); destroy('chartADR');
   var labels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var revData=labels.map(function(_,i){return byMonth[i]||0;});
-  var canvas=el('chartRev');
-  if(canvas){
-    new Chart(canvas,{type:'bar',data:{labels:labels,datasets:[{label:'Revenue',data:revData,backgroundColor:'rgba(73,10,10,0.7)',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+v.toLocaleString();}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // Build monthly aggregates
+  var revByMonth={}, nightsByMonth={}, payByMonth={};
+  BOOKINGS.filter(function(b){return b.status!=='cancelled'&&b.guest!=='Camille (Internal)';}).forEach(function(b){
+    var m=_d(b.ci).getMonth();
+    revByMonth[m]=(revByMonth[m]||0)+(b.payout||0);
+    nightsByMonth[m]=(nightsByMonth[m]||0)+(b.nights||0);
+  });
+
+  // Days in each month for current year (for occupancy %)
+  var year=new Date().getFullYear();
+  var daysInMonth=labels.map(function(_,i){ return new Date(year,i+1,0).getDate(); });
+
+  var revData=labels.map(function(_,i){return revByMonth[i]||0;});
+  var occData=labels.map(function(_,i){
+    var n=nightsByMonth[i]||0;
+    return Math.round((n/daysInMonth[i])*100);
+  });
+  var adrData=labels.map(function(_,i){
+    var r=revByMonth[i]||0;
+    var n=nightsByMonth[i]||0;
+    return n>0 ? Math.round(r/n) : 0;
+  });
+
+  // Revenue chart
+  var revCanvas=el('chartRev');
+  if(revCanvas){
+    new Chart(revCanvas,{type:'bar',data:{labels:labels,datasets:[{label:'Revenue',data:revData,backgroundColor:'rgba(73,10,10,0.7)',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+v.toLocaleString();}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+  }
+
+  // Occupancy chart (% per month)
+  var occCanvas=el('chartOcc');
+  if(occCanvas){
+    new Chart(occCanvas,{type:'line',data:{labels:labels,datasets:[{label:'Occupancy %',data:occData,borderColor:'rgba(90,122,90,1)',backgroundColor:'rgba(90,122,90,0.15)',fill:true,tension:0.3,pointBackgroundColor:'rgba(90,122,90,1)',pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false},title:{display:true,text:'Occupancy %',color:'rgba(0,0,0,0.55)',font:{size:11,weight:'normal'}}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:function(v){return v+'%';}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+  }
+
+  // ADR chart ($ per night per month)
+  var adrCanvas=el('chartADR');
+  if(adrCanvas){
+    new Chart(adrCanvas,{type:'line',data:{labels:labels,datasets:[{label:'ADR',data:adrData,borderColor:'rgba(200,169,110,1)',backgroundColor:'rgba(200,169,110,0.15)',fill:true,tension:0.3,pointBackgroundColor:'rgba(200,169,110,1)',pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false},title:{display:true,text:'ADR ($ / night)',color:'rgba(0,0,0,0.55)',font:{size:11,weight:'normal'}}},scales:{y:{beginAtZero:false,ticks:{callback:function(v){return '$'+v;}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
   }
 }
 
