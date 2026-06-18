@@ -1574,17 +1574,20 @@ function closePanel() {
 // ── PERFORMANCE ───────────────────────────────────────────────
 function calcPerf() {
   var confirmed=BOOKINGS.filter(function(b){return b.status!=='cancelled'&&b.guest!=='Camille (Internal)';});
-  var cancelled=BOOKINGS.filter(function(b){return b.status==='cancelled';});
+  // Calendar feed never has 'cancelled' status (Airbnb removes them) — pull from CANCELLATIONS (Gmail feed)
+  var cancCount = Array.isArray(CANCELLATIONS) ? CANCELLATIONS.length : 0;
   var nights=confirmed.reduce(function(s,b){return s+b.nights;},0);
-  var total=confirmed.length+cancelled.length;
-  var cancelRate=total?Math.round((cancelled.length/total)*100):0;
+  var total=confirmed.length+cancCount;
+  var cancelRate=total?Math.round((cancCount/total)*100):0;
   setText('perf-bk',confirmed.length);
-  setText('perf-bk-sub',cancelled.length+' cancellations');
+  setText('perf-bk-sub',cancCount+' cancellations');
   setText('perf-nights',nights);
   if(confirmed.length) setText('perf-los',(nights/confirmed.length).toFixed(1)+'n');
   setText('perf-comp',(100-cancelRate)+'%');
   setText('perf-canc',cancelRate+'%');
-  var lostRev=cancelled.reduce(function(s,b){return s+b.payout;},0);
+  // Estimate lost revenue: avg payout per confirmed booking × cancellations
+  var avgPayout = confirmed.length ? confirmed.reduce(function(s,b){return s+(b.payout||0);},0) / confirmed.length : 0;
+  var lostRev = avgPayout * cancCount;
   setText('perf-lost',fmt$(lostRev));
   var compBar=el('perf-comp-bar'); var cancBar=el('perf-canc-bar'); var lostBar=el('perf-lost-bar');
   if(compBar) compBar.style.width=(100-cancelRate)+'%';
