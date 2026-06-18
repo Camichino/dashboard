@@ -734,9 +734,43 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="card"><div class="cl">Check-in Rating</div><div class="cv green">5.0★</div><div class="cs">Highest category</div></div>
         <div class="card" style="border-left:3px solid var(--taupe)"><div class="cl">Low Review</div><div class="cv warn sm">1★ — Elizabeth</div><div class="cs">Feb 21–23 · Response submitted ✓</div></div>
       </div>
-      <div class="alert a-g"><span class="ai">→</span><div>Host response submitted on Elizabeth's review. <strong>5 consecutive 5-star reviews</strong> brings your average to ~4.6 — within reach of the 4.8 Superhost threshold.</div></div>
+      <div class="alert a-g" id="path-alert"><span class="ai">→</span><div id="path-alert-text">Loading…</div></div>
     </div>
   </div>
+
+  <!-- ── PATH TO STATUS ─────────────────────────────────────── -->
+  <div class="sec">Path to Status</div>
+  <div class="g2" style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card" style="padding:20px 22px;border-left:3px solid var(--gold)">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+        <div style="font-family:'Bodoni Moda',serif;font-size:18px;color:var(--brown)">Superhost</div>
+        <div style="font-size:11px;color:var(--taupe)">target 4.8 ★</div>
+      </div>
+      <div style="font-family:'Bodoni Moda',serif;font-size:36px;color:var(--brown);line-height:1" id="sh-need">—</div>
+      <div style="font-size:12px;color:var(--taupe);margin-top:4px" id="sh-need-sub">more consecutive 5-star reviews</div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--taupe);line-height:1.5">
+        <strong style="color:var(--charcoal)">Other requirements:</strong><br>
+        · 10+ stays or 100+ nights / yr<br>
+        · &lt;1% host cancellation rate<br>
+        · 90%+ response rate &lt;24h
+      </div>
+    </div>
+    <div class="card" style="padding:20px 22px;border-left:3px solid var(--ox)">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+        <div style="font-family:'Bodoni Moda',serif;font-size:18px;color:var(--brown)">Guest Favorite</div>
+        <div style="font-size:11px;color:var(--taupe)">target 4.9 ★</div>
+      </div>
+      <div style="font-family:'Bodoni Moda',serif;font-size:36px;color:var(--brown);line-height:1" id="gf-need">—</div>
+      <div style="font-size:12px;color:var(--taupe);margin-top:4px" id="gf-need-sub">more consecutive 5-star reviews</div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--taupe);line-height:1.5">
+        <strong style="color:var(--charcoal)">Other requirements:</strong><br>
+        · 5+ recent reviews ✓<br>
+        · 1% or less cancellation rate<br>
+        · Top 10% on Airbnb
+      </div>
+    </div>
+  </div>
+
   <div class="sec">Guest Reviews — From Gmail</div>
   <div id="reviews-feed">
     <div class="rv" style="border-left:3px solid var(--green)">
@@ -1650,6 +1684,33 @@ function renderReviews() {
   pct = Math.max(0, Math.min(100, pct));
   var bar = el('superhost-bar');
   if (bar) bar.style.width = pct + '%';
+
+  // Path to status — compute how many more 5-stars needed
+  var n = AIRBNB_OFFICIAL_COUNT;
+  var avg = AIRBNB_OFFICIAL_RATING;
+  function needed(target) {
+    if (avg >= target) return 0;
+    // (n*avg + 5k) / (n + k) >= target
+    // 5k - target*k >= n*target - n*avg
+    // k(5 - target) >= n(target - avg)
+    return Math.ceil((n * (target - avg)) / (5 - target));
+  }
+  var shNeed = needed(4.8);
+  var gfNeed = needed(4.9);
+  setText('sh-need', shNeed === 0 ? '✓ Achieved' : shNeed);
+  setText('gf-need', gfNeed === 0 ? '✓ Achieved' : gfNeed);
+  setText('sh-need-sub', shNeed === 0 ? 'you are at or above 4.8 ★' : 'more consecutive 5-star reviews');
+  setText('gf-need-sub', gfNeed === 0 ? 'you are at or above 4.9 ★' : 'more consecutive 5-star reviews');
+
+  // Replace the static alert with dynamic encouragement
+  var alertText = el('path-alert-text');
+  if (alertText) {
+    if (shNeed === 0) {
+      alertText.innerHTML = '<strong>You\'ve hit the Superhost threshold (4.8 ★).</strong> Keep the streak going — next milestone is Guest Favorite at 4.9.';
+    } else {
+      alertText.innerHTML = '<strong>' + shNeed + ' more 5-star reviews</strong> would push your average from ' + avg.toFixed(2) + ' to 4.80 — within reach of Superhost. Each great stay matters.';
+    }
+  }
   var html='';
   REVIEWS.forEach(function(r){
     var stars='★'.repeat(r.stars)+'☆'.repeat(5-r.stars);
