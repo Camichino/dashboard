@@ -771,6 +771,36 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
+  <!-- ── HOSTING + STREAK + STAYS ──────────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px">
+    <div class="card" style="padding:18px 22px">
+      <div class="cl">Hosting Tenure</div>
+      <div class="cv sm" id="ten-months">5 mo</div>
+      <div class="cs" id="ten-sub">to 1-yr Superhost eligibility</div>
+      <div class="pbar" style="margin-top:10px"><div class="pfill gold" id="ten-bar" style="width:42%"></div></div>
+    </div>
+    <div class="card" style="padding:18px 22px;border-left:3px solid var(--green)">
+      <div class="cl">5-Star Streak</div>
+      <div class="cv sm green" id="streak-count">—</div>
+      <div class="cs" id="streak-sub">consecutive 5-star reviews</div>
+    </div>
+    <div class="card" style="padding:18px 22px">
+      <div class="cl">Total Stays YTD</div>
+      <div class="cv sm" id="stays-count">—</div>
+      <div class="cs" id="stays-sub">need 10+ for Superhost</div>
+      <div class="pbar" style="margin-top:10px"><div class="pfill green" id="stays-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- ── CATEGORY RATINGS ──────────────────────────────────── -->
+  <div class="sec">Category Ratings — From Airbnb</div>
+  <div class="card" style="padding:22px 26px;margin-bottom:24px">
+    <div id="cat-rows" style="display:flex;flex-direction:column;gap:14px"></div>
+    <div style="font-size:11px;color:var(--taupe);margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      Your weakest categories are where guests deduct stars. Strengthening Location perception (parking ad, transit tips) and Value perception (extras, welcome notes) raises future stars.
+    </div>
+  </div>
+
   <div class="sec">Guest Reviews — From Gmail</div>
   <div id="reviews-feed">
     <div class="rv" style="border-left:3px solid var(--green)">
@@ -1662,9 +1692,18 @@ var REVIEWS = [
   {guest:'Kendal Brame',        loc:'',               date:'Mar 25-28',nights:3, stars:5, body:'Beautiful space, incredible design. Felt like a boutique hotel.', tags:['Looked like the photos','Pristine kitchen']},
 ];
 
-// Override with official Airbnb rating. Update monthly or wire to scraper later.
+// Override with official Airbnb data. Update monthly or wire to scraper later.
 var AIRBNB_OFFICIAL_RATING = 4.69;
 var AIRBNB_OFFICIAL_COUNT = 16;
+var AIRBNB_HOSTING_MONTHS = 5; // months since first guest
+var AIRBNB_CATEGORIES = {
+  cleanliness: 4.8,
+  accuracy:    4.8,
+  checkin:     5.0,
+  communication: 4.8,
+  location:    4.7,
+  value:       4.7
+};
 
 function renderReviews() {
   var feed=el('reviews-feed'); if(!feed) return;
@@ -1701,6 +1740,56 @@ function renderReviews() {
   setText('gf-need', gfNeed === 0 ? '✓ Achieved' : gfNeed);
   setText('sh-need-sub', shNeed === 0 ? 'you are at or above 4.8 ★' : 'more consecutive 5-star reviews');
   setText('gf-need-sub', gfNeed === 0 ? 'you are at or above 4.9 ★' : 'more consecutive 5-star reviews');
+
+  // Hosting tenure
+  var tenMonths = AIRBNB_HOSTING_MONTHS;
+  var monthsToSh = Math.max(0, 12 - tenMonths);
+  setText('ten-months', tenMonths + ' mo');
+  setText('ten-sub', monthsToSh === 0 ? 'eligible for Superhost ✓' : monthsToSh + ' mo to 1-yr eligibility');
+  var tenBar = el('ten-bar');
+  if (tenBar) tenBar.style.width = Math.min(100, (tenMonths / 12) * 100) + '%';
+
+  // 5-Star streak (consecutive from most recent)
+  var streak = 0;
+  for (var iS = 0; iS < REVIEWS.length; iS++) {
+    if (REVIEWS[iS].stars === 5) streak++;
+    else break;
+  }
+  setText('streak-count', streak);
+  setText('streak-sub', streak === 0 ? 'no current streak' : (streak === 1 ? 'most recent review' : 'consecutive 5-star reviews'));
+
+  // Total stays YTD
+  var staysYTD = BOOKINGS.filter(function(b){ return b.status === 'past' && b.guest !== 'Camille (Internal)'; }).length;
+  setText('stays-count', staysYTD);
+  var staysTarget = 10;
+  setText('stays-sub', staysYTD >= staysTarget ? 'Superhost stays requirement met ✓' : (staysTarget - staysYTD) + ' more to 10-stay/yr threshold');
+  var staysBar = el('stays-bar');
+  if (staysBar) staysBar.style.width = Math.min(100, (staysYTD / staysTarget) * 100) + '%';
+
+  // Category ratings
+  var catLabels = {
+    cleanliness: '🧼 Cleanliness',
+    accuracy: '📋 Accuracy',
+    checkin: '🚪 Check-in',
+    communication: '💬 Communication',
+    location: '📍 Location',
+    value: '💰 Value'
+  };
+  var catRows = el('cat-rows');
+  if (catRows) {
+    var sortedCats = Object.keys(AIRBNB_CATEGORIES).sort(function(a, b){ return AIRBNB_CATEGORIES[b] - AIRBNB_CATEGORIES[a]; });
+    var rowsHtml = '';
+    sortedCats.forEach(function(key){
+      var score = AIRBNB_CATEGORIES[key];
+      var pct = Math.round((score / 5) * 100);
+      var color = score >= 4.9 ? 'var(--green)' : (score >= 4.75 ? 'var(--gold)' : 'var(--ox)');
+      rowsHtml += '<div>';
+      rowsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:13px"><span>' + catLabels[key] + '</span><span style="font-family:\'Bodoni Moda\',serif;font-size:18px;color:' + color + '">' + score.toFixed(1) + ' ★</span></div>';
+      rowsHtml += '<div class="pbar" style="height:6px"><div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:3px"></div></div>';
+      rowsHtml += '</div>';
+    });
+    catRows.innerHTML = rowsHtml;
+  }
 
   // Replace the static alert with dynamic encouragement
   var alertText = el('path-alert-text');
