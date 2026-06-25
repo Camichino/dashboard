@@ -1016,16 +1016,42 @@ async function hydrateLive() {
     var payoutsURL  = PL_PROXY + '?action=payouts&days=180';
     var cancelURL   = PL_PROXY + '?action=cancellations&days=180';
     var reviewsURL  = PL_PROXY + '?action=reviews&days=365';
+    var airbnbURL   = PL_PROXY + '?action=airbnb_rating';
     var results = await Promise.all([
       fetch(bookingsURL, {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(payoutsURL,  {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(cancelURL,   {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
-      fetch(reviewsURL,  {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;})
+      fetch(reviewsURL,  {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(airbnbURL,   {redirect:'follow'}).then(function(r){return r.json();}).catch(function(){return null;})
     ]);
     var bk = results[0];
     var py = results[1];
     var cn = results[2];
     var rv = results[3];
+    var ab = results[4];
+    // Override Airbnb constants with live values if available
+    if (ab && ab.rating) {
+      AIRBNB_OFFICIAL_RATING = ab.rating;
+      if (ab.reviewCount) AIRBNB_OFFICIAL_COUNT = ab.reviewCount;
+      if (ab.categories) {
+        if (ab.categories.cleanliness)    AIRBNB_CATEGORIES.cleanliness    = ab.categories.cleanliness;
+        if (ab.categories.accuracy)       AIRBNB_CATEGORIES.accuracy       = ab.categories.accuracy;
+        if (ab.categories.checkin)        AIRBNB_CATEGORIES.checkin        = ab.categories.checkin;
+        if (ab.categories.communication)  AIRBNB_CATEGORIES.communication  = ab.categories.communication;
+        if (ab.categories.location)       AIRBNB_CATEGORIES.location       = ab.categories.location;
+        if (ab.categories.value)          AIRBNB_CATEGORIES.value          = ab.categories.value;
+      }
+    }
+    // Auto-compute hosting tenure from earliest BOOKING check-in date
+    if (Array.isArray(bk) && bk.length) {
+      var earliest = bk.reduce(function(min, b){ return (b.ci && b.ci < min) ? b.ci : min; }, '9999-12-31');
+      if (earliest && earliest !== '9999-12-31') {
+        var start = new Date(earliest);
+        var nowD = new Date();
+        var months = (nowD.getFullYear() - start.getFullYear()) * 12 + (nowD.getMonth() - start.getMonth());
+        if (months > 0) AIRBNB_HOSTING_MONTHS = months;
+      }
+    }
     if (Array.isArray(bk) && bk.length) {
       BOOKINGS.length = 0;
       bk.forEach(function(b){ BOOKINGS.push(b); });
@@ -1734,10 +1760,11 @@ var REVIEWS = [
   {guest:'Kendal Brame',        loc:'',               date:'Mar 25-28',nights:3, stars:5, body:'Beautiful space, incredible design. Felt like a boutique hotel.', tags:['Looked like the photos','Pristine kitchen']},
 ];
 
-// Override with official Airbnb data. Update monthly or wire to scraper later.
+// Live-updated from Airbnb listing via Apps Script proxy on every page load.
+// Values below are fallbacks if the scraper fails.
 var AIRBNB_OFFICIAL_RATING = 4.69;
 var AIRBNB_OFFICIAL_COUNT = 16;
-var AIRBNB_HOSTING_MONTHS = 5; // months since first guest
+var AIRBNB_HOSTING_MONTHS = 5; // auto-computed from BOOKINGS in hydrateLive
 var AIRBNB_CATEGORIES = {
   cleanliness: 4.8,
   accuracy:    4.8,
